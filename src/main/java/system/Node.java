@@ -1,3 +1,5 @@
+package system;
+
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Positive;
@@ -42,7 +44,7 @@ public class Node extends ComponentDefinition {
     Handler<NodeMessage> nodeMessageHandler = new Handler<NodeMessage>() {
         @Override
         public void handle(NodeMessage event) {
-            System.out.println("Node Message - Source: " + event.getHeader().getSource().getPort() + "Destination: " + self.getPort());
+            System.out.println("system.Node Message - Source: " + event.getHeader().getSource().getPort() + "Destination: " + self.getPort());
 
         }
     };

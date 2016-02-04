@@ -1,3 +1,5 @@
+package system;
+
 import se.sics.kompics.network.Transport;
 
 public class NodeMessage extends TMessage {

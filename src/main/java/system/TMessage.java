@@ -1,3 +1,5 @@
+package system;
+
 import se.sics.kompics.network.Msg;
 import se.sics.kompics.network.Transport;
 
