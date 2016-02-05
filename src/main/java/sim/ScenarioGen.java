@@ -16,7 +16,54 @@ import java.util.HashMap;
 public class ScenarioGen {
 
 
-    static Operation1 startOp = new Operation1<StartNodeEvent, Integer>() {
+    static Operation1 evenNumberGroup = new Operation1<StartNodeEvent, Integer>() {
+
+        @Override
+        public StartNodeEvent generate(final Integer self) {
+            return new StartNodeEvent() {
+                TAddress selfAdr;
+                HashMap<String, TAddress> neighbours = new HashMap<>();
+
+                {
+                    try {
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
+
+                        for (int i = 1; i < 4; i++) {
+                            if (i != self) {
+                                neighbours.put("node" + i, new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
+                            }
+                        }
+
+
+                    } catch (UnknownHostException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+
+                @Override
+                public Address getNodeAddress() {
+                    return selfAdr;
+                }
+
+                @Override
+                public Class getComponentDefinition() {
+                    return Parent.class;
+                }
+
+                @Override
+                public Init getComponentInit() {
+                    return new Parent.Init(selfAdr, neighbours);
+                }
+
+                @Override
+                public String toString() {
+                    return "StartNode<" + selfAdr.toString() + ">";
+                }
+            };
+        }
+    };
+
+    static Operation1 oddNumberGroup = new Operation1<StartNodeEvent, Integer>() {
 
         @Override
         public StartNodeEvent generate(final Integer self) {
@@ -67,15 +114,23 @@ public class ScenarioGen {
     public static SimulationScenario simpleNodePing() {
         SimulationScenario scen = new SimulationScenario() {
             {
-                StochasticProcess nodes = new StochasticProcess() {
+                StochasticProcess evenNumberNodes = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(3, startOp, new BasicIntSequentialDistribution(1));
+                        raise(3, evenNumberGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 
-                nodes.start();
-                terminateAfterTerminationOf(10000, nodes);
+                StochasticProcess oddNumberNodes = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(3, evenNumberGroup, new BasicIntSequentialDistribution(4));
+                    }
+                };
+
+                evenNumberNodes.start();
+                oddNumberNodes.start();
+                terminateAfterTerminationOf(10000, oddNumberNodes);
             }
         };
 
