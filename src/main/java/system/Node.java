@@ -1,10 +1,13 @@
 package system;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Positive;
 import se.sics.kompics.Start;
 import se.sics.kompics.network.Network;
+import se.sics.kompics.timer.Timer;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,10 +15,12 @@ import java.util.Map;
 
 public class Node extends ComponentDefinition {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Node.class);
     private final TAddress self;
 
     private final HashMap<String, TAddress> neighbours;
     Positive<Network> net = requires(Network.class);
+    Positive<Timer> timer = requires(Timer.class);
 
 
     public Node(Init init) {
@@ -31,10 +36,11 @@ public class Node extends ComponentDefinition {
         public void handle(Start event) {
 
             Iterator it = neighbours.entrySet().iterator();
+            LOG.info( self.toString() + ": ( Start Event Triggered )") ;
             while(it.hasNext()) {
                 Map.Entry pair = (Map.Entry) it.next();
-                System.out.println("OKEY let's send us a message! Consider this other node!");
                 trigger(new NodeMessage(self,(TAddress) pair.getValue()), net);
+                LOG.info( self.toString() + ": ( Node message sent To: " + pair.getValue() + " )");
             }
 
 
@@ -42,9 +48,10 @@ public class Node extends ComponentDefinition {
     };
 
     Handler<NodeMessage> nodeMessageHandler = new Handler<NodeMessage>() {
+
         @Override
         public void handle(NodeMessage event) {
-            System.out.println("system.Node Message - Source: " + event.getHeader().getSource().getPort() + "Destination: " + self.getPort());
+            LOG.info( self.toString() + ": ( NodeMessage Received From: " + event.getSource() + " )");
 
         }
     };

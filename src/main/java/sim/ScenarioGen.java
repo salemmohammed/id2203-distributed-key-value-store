@@ -28,9 +28,9 @@ public class ScenarioGen {
                     try {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
 
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 1; i < 4; i++) {
                             if (i != self) {
-                                neighbours.put("node" + 1, new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
+                                neighbours.put("node" + i, new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
                             }
                         }
 
@@ -69,7 +69,7 @@ public class ScenarioGen {
             {
                 StochasticProcess nodes = new StochasticProcess() {
                     {
-                        eventInterArrivalTime(constant(1000));
+                        eventInterArrivalTime(constant(0));
                         raise(3, startOp, new BasicIntSequentialDistribution(1));
                     }
                 };
