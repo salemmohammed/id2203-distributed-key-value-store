@@ -7,13 +7,13 @@ import se.sics.kompics.Handler;
 import se.sics.kompics.Positive;
 import se.sics.kompics.Start;
 import se.sics.kompics.network.Network;
+import se.sics.kompics.timer.CancelPeriodicTimeout;
+import se.sics.kompics.timer.SchedulePeriodicTimeout;
 import se.sics.kompics.timer.Timer;
+import se.sics.kompics.timer.Timeout;
 import system.event.NodeMessage;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 public class Node extends ComponentDefinition {
 
@@ -22,9 +22,11 @@ public class Node extends ComponentDefinition {
     private final TAddress otherGroupLeader;
     private boolean isLeader;
 
+
     private final HashMap<String, TAddress> neighbours;
     Positive<Network> net = requires(Network.class);
     Positive<Timer> timer = requires(Timer.class);
+    private UUID timerId;
 
     private LinkedList<TAddress> startupAcks;
 
@@ -44,6 +46,12 @@ public class Node extends ComponentDefinition {
                 @Override
                 public void handle(Start event) {
 
+                    SchedulePeriodicTimeout spt = new SchedulePeriodicTimeout(0, 1000);
+                    HeartbeatTimeout timeout = new HeartbeatTimeout(spt);
+                    spt.setTimeoutEvent(timeout);
+                    trigger(spt, timer);
+                    timerId = timeout.getTimeoutId();
+
                     Iterator it = neighbours.entrySet().iterator();
                     LOG.info( self.toString() + ": ( Start Event Triggered )") ;
                     while(it.hasNext()) {
@@ -52,9 +60,10 @@ public class Node extends ComponentDefinition {
                         LOG.info( self.toString() + ": ( Node message sent To: " + pair.getValue() + " )");
                     }
 
-
         }
     };
+
+
 
     Handler<NodeMessage> nodeMessageHandler = new Handler<NodeMessage>() {
 
@@ -72,7 +81,21 @@ public class Node extends ComponentDefinition {
             LOG.info( self.toString() + ": ( NodeMessage Received From: " + event.getSource() + " )");
 
         }
+
+
     };
+
+    public static class HeartbeatTimeout extends Timeout {
+
+        public HeartbeatTimeout(SchedulePeriodicTimeout spt) {
+            super(spt);
+        }
+    }
+
+    @Override
+    public void tearDown() {
+        trigger(new CancelPeriodicTimeout(timerId), timer);
+    }
 
     public static class Init extends se.sics.kompics.Init<Node> {
 
