@@ -11,7 +11,7 @@ public abstract class TMessage implements Msg<TAddress, THeader> {
         this.header = new THeader(src, dst, protocol);
     }
     
-    TMessage(THeader header) {
+    public TMessage(THeader header) {
         this.header = header;
     }
     

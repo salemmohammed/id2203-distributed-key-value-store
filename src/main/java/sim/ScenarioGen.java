@@ -23,11 +23,17 @@ public class ScenarioGen {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 HashMap<String, TAddress> neighbours = new HashMap<>();
+                TAddress otherGroupLeader;
+                boolean isLeader;
 
                 {
                     try {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
-
+                        otherGroupLeader = new TAddress(InetAddress.getByName("192.193.0.4"), 10000);
+                        isLeader = false;
+                        if(self == 1) {
+                            isLeader = true;
+                        }
                         for (int i = 1; i < 4; i++) {
                             if (i != self) {
                                 neighbours.put("node" + i, new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
@@ -52,7 +58,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new Parent.Init(selfAdr, neighbours);
+                    return new Parent.Init(selfAdr, neighbours, otherGroupLeader, isLeader );
                 }
 
                 @Override
@@ -70,18 +76,22 @@ public class ScenarioGen {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 HashMap<String, TAddress> neighbours = new HashMap<>();
-
+                TAddress otherGroupLeader;
+                boolean isLeader;
                 {
                     try {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
+                        otherGroupLeader = new TAddress(InetAddress.getByName("192.193.0.1"), 10000);
+                        isLeader = false;
+                        if(self == 4) {
+                            isLeader = true;
+                        }
 
-                        for (int i = 1; i < 4; i++) {
+                        for (int i = 4; i < 7; i++) {
                             if (i != self) {
                                 neighbours.put("node" + i, new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
                             }
                         }
-
-
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -99,7 +109,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new Parent.Init(selfAdr, neighbours);
+                    return new Parent.Init(selfAdr, neighbours, otherGroupLeader, isLeader);
                 }
 
                 @Override
@@ -124,7 +134,7 @@ public class ScenarioGen {
                 StochasticProcess oddNumberNodes = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(3, evenNumberGroup, new BasicIntSequentialDistribution(4));
+                        raise(3, oddNumberGroup, new BasicIntSequentialDistribution(4));
                     }
                 };
 
