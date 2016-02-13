@@ -9,7 +9,6 @@ import system.client.event.GETRequest;
 import system.epfd.port.FDPort;
 import system.epfd.event.Restore;
 import system.epfd.event.Suspect;
-import system.event.*;
 import system.network.TAddress;
 
 
@@ -38,7 +37,6 @@ public class Node extends ComponentDefinition {
         startupAcks = new LinkedList<>();
 
         subscribe(startHandler, control);
-        subscribe(nodeMessageHandler, net);
 
         subscribe(suspectHandler, epfd);
         subscribe(restoreHandler, epfd);
@@ -52,11 +50,6 @@ public class Node extends ComponentDefinition {
                     //Send initial message to verify connectivity
                     Iterator it = neighbours.iterator();
                     LOG.info(self.toString() + ": Start Event Triggered (Store= " + store+")") ;
-                    while(it.hasNext()) {
-                        TAddress neighbour = (TAddress)it.next();
-                        trigger(new NodeMessage(self,neighbour), net);
-                        LOG.info( self.toString() + ": ( Node message sent To: " + neighbour + " )");
-                    }
         }
     };
 
@@ -79,24 +72,6 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(Restore suspect) {
             System.out.println("Received restore");
-        }
-    };
-
-
-    Handler<NodeMessage> nodeMessageHandler = new Handler<NodeMessage>() {
-        @Override
-        public void handle(NodeMessage event) {
-            //Leader waits for message from everyone in the group, then sends message to other leader
-            if(isLeader) {
-                if(event.getSource().equals(otherGroupLeader)) {
-                    LOG.info("Leader: " + self.toString() + event.getSource() + " Received From: " + event.getSource() + " )");
-                }
-                    startupAcks.add(event.getSource());
-            }
-            if(startupAcks.size() == neighbours.size()) {
-                trigger(new NodeMessage(self,otherGroupLeader), net);
-            }
-            LOG.info( self.toString() + ": ( NodeMessage Received From: " + event.getSource() + " )");
         }
     };
 

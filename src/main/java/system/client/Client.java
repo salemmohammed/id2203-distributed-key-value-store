@@ -6,7 +6,6 @@ import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
-import system.event.NodeMessage;
 import system.network.TAddress;
 import system.node.Node;
 
@@ -37,7 +36,10 @@ public class Client extends ComponentDefinition {
             Iterator it = nodes.iterator();
             while(it.hasNext()) {
                 TAddress node = (TAddress) it.next();
-                System.out.println("Sending GETRequest to " + node);
+                System.out.println("Sending 4 GETRequests to " + node);
+                trigger(new GETRequest(self, node), net);
+                trigger(new GETRequest(self, node), net);
+                trigger(new GETRequest(self, node), net);
                 trigger(new GETRequest(self, node), net);
             }
         }
