@@ -1,9 +1,9 @@
-package system.event;
+package system.epfd.event;
 
 import se.sics.kompics.network.Transport;
-import system.TAddress;
-import system.THeader;
-import system.TMessage;
+import system.network.TAddress;
+import system.network.THeader;
+import system.network.TMessage;
 
 /**
  * Created by Robin on 2016-02-07.

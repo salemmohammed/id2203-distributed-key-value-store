@@ -1,12 +1,16 @@
-package system;
+package system.epfd;
 
 import se.sics.kompics.*;
-import se.sics.kompics.network.Address;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timeout;
 import se.sics.kompics.timer.Timer;
-import system.event.*;
+import system.network.TAddress;
+import system.epfd.event.HeartbeatReply;
+import system.epfd.event.HeartbeatRequest;
+import system.epfd.event.Restore;
+import system.epfd.event.Suspect;
+import system.epfd.port.FDPort;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,6 +51,7 @@ public class EPFD extends ComponentDefinition {
         public void handle(Start event) {
             //Add all neighbours as alive nodes
             aliveNodes.addAll(neighbours);
+            //Subscribe to one timeout
             startTimer(heartbeatDelay);
         }
     };
@@ -100,7 +105,6 @@ public class EPFD extends ComponentDefinition {
         timerId = timeout.getTimeoutId();
     }
 
-    //TODO add heartbeat request handler and reply
     Handler<HeartbeatReply> heartbeatReplyHandler = new Handler<HeartbeatReply>() {
         @Override
         public void handle(HeartbeatReply heartbeatTimeout) {
@@ -108,7 +112,6 @@ public class EPFD extends ComponentDefinition {
         }
     };
 
-    //TODO add heartbeat request handler and reply
     Handler<HeartbeatRequest> heartbeatRequestHandler = new Handler<HeartbeatRequest>() {
         @Override
         public void handle(HeartbeatRequest heartbeatTimeout) {
@@ -121,7 +124,6 @@ public class EPFD extends ComponentDefinition {
             super(spt);
         }
     }
-
 
     public static class Init extends se.sics.kompics.Init<EPFD> {
         public final TAddress self;

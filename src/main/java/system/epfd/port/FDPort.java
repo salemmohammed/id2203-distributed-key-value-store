@@ -1,8 +1,8 @@
-package system;
+package system.epfd.port;
 
 import se.sics.kompics.PortType;
-import system.event.Restore;
-import system.event.Suspect;
+import system.epfd.event.Restore;
+import system.epfd.event.Suspect;
 
 /**
  * Created by Robin on 2016-02-13.
