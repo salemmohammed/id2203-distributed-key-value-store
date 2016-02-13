@@ -1,4 +1,5 @@
 package sim;
+import se.sics.kompics.simulator.events.system.KillNodeEvent;
 import system.Parent;
 import system.TAddress;
 
@@ -11,6 +12,7 @@ import se.sics.kompics.simulator.events.system.StartNodeEvent;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ScenarioGen {
@@ -22,7 +24,7 @@ public class ScenarioGen {
         public StartNodeEvent generate(final Integer self) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
-                HashMap<String, TAddress> neighbours = new HashMap<>();
+                ArrayList<TAddress> neighbours = new ArrayList<>();
                 TAddress otherGroupLeader;
                 boolean isLeader;
 
@@ -36,11 +38,9 @@ public class ScenarioGen {
                         }
                         for (int i = 1; i < 4; i++) {
                             if (i != self) {
-                                neighbours.put("node" + i, new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
+                                neighbours.add(new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
                             }
                         }
-
-
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -75,7 +75,7 @@ public class ScenarioGen {
         public StartNodeEvent generate(final Integer self) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
-                HashMap<String, TAddress> neighbours = new HashMap<>();
+                ArrayList<TAddress> neighbours = new ArrayList<>();
                 TAddress otherGroupLeader;
                 boolean isLeader;
                 {
@@ -89,7 +89,7 @@ public class ScenarioGen {
 
                         for (int i = 4; i < 7; i++) {
                             if (i != self) {
-                                neighbours.put("node" + i, new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
+                                neighbours.add(new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
                             }
                         }
                     } catch (UnknownHostException ex) {
@@ -120,6 +120,27 @@ public class ScenarioGen {
         }
     };
 
+    static Operation1 killNodeOperation = new Operation1<KillNodeEvent, Integer>() {
+        @Override
+        public KillNodeEvent generate(final Integer self) {
+            return new KillNodeEvent() {
+                TAddress selfAdr;
+
+                {
+                    try {
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
+                    } catch (UnknownHostException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                @Override
+                public Address getNodeAddress() {
+                    return selfAdr;
+                }
+            };
+        }
+    };
+
 
     public static SimulationScenario simpleNodePing() {
         SimulationScenario scen = new SimulationScenario() {
@@ -138,9 +159,26 @@ public class ScenarioGen {
                     }
                 };
 
+                //Kill node on ip ending with 2
+                StochasticProcess killNode = new StochasticProcess() {
+                    {
+                        raise(1, killNodeOperation, new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+                //Restartnode on ip ending with 2
+                StochasticProcess restartNode = new StochasticProcess() {
+                    {
+                        raise(1, evenNumberGroup, new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+
                 evenNumberNodes.start();
                 oddNumberNodes.start();
-                terminateAfterTerminationOf(10000, oddNumberNodes);
+                killNode.startAfterStartOf(500, oddNumberNodes);
+                restartNode.startAfterStartOf(500, killNode);
+                terminateAfterTerminationOf(10000, restartNode);
             }
         };
 

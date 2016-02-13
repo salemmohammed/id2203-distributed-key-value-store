@@ -8,12 +8,12 @@ import system.TMessage;
 /**
  * Created by Robin on 2016-02-07.
  */
-public class HeartbeatMessage extends TMessage {
-    public HeartbeatMessage(TAddress src, TAddress dst) {
+public class HeartbeatRequest extends TMessage {
+    public HeartbeatRequest(TAddress src, TAddress dst) {
         super(src, dst, Transport.TCP);
     }
 
-    public HeartbeatMessage(THeader header) {
+    public HeartbeatRequest(THeader header) {
         super(header);
     }
 }
