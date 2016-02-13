@@ -34,6 +34,11 @@ public class EPFD extends ComponentDefinition {
         suspectedNodes = new ArrayList<>();
         aliveNodes = new ArrayList<>();
         this.self = init.self;
+
+        subscribe(startHandler, control);
+        subscribe(heartbeatTimeoutHandler, timer);
+        subscribe(heartbeatRequestHandler, net);
+        subscribe(heartbeatReplyHandler, net);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
@@ -42,6 +47,7 @@ public class EPFD extends ComponentDefinition {
         public void handle(Start event) {
             //Add all neighbours as alive nodes
             aliveNodes.addAll(neighbours);
+            startTimer(heartbeatDelay);
         }
     };
 
@@ -50,6 +56,7 @@ public class EPFD extends ComponentDefinition {
 
         @Override
         public void handle(HeartbeatTimeout heartbeatTimeout) {
+
             ArrayList<TAddress> intersection = new ArrayList<>(aliveNodes);
             intersection.retainAll(suspectedNodes);
             //If we found an alive node that is also suspected, we know need to wait longer for heartbeat reply

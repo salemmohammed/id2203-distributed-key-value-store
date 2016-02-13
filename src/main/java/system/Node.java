@@ -49,7 +49,6 @@ public class Node extends ComponentDefinition {
                         trigger(new NodeMessage(self,neighbour), net);
                         LOG.info( self.toString() + ": ( Node message sent To: " + neighbour + " )");
                     }
-
         }
     };
 
