@@ -6,10 +6,7 @@ import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
-import system.epfd.EPFD;
-import system.epfd.port.FDPort;
 import system.network.TAddress;
-import system.node.Node;
 
 import java.util.ArrayList;
 

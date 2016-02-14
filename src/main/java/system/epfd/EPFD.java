@@ -10,7 +10,7 @@ import system.epfd.event.HeartbeatReply;
 import system.epfd.event.HeartbeatRequest;
 import system.epfd.event.Restore;
 import system.epfd.event.Suspect;
-import system.epfd.port.FDPort;
+import system.port.epfd.FDPort;
 
 import java.util.ArrayList;
 import java.util.Iterator;
