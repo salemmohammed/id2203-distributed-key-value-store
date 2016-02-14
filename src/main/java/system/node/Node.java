@@ -7,7 +7,7 @@ import se.sics.kompics.network.Network;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
 import system.client.event.KeyValuePair;
-import system.epfd.port.FDPort;
+import system.port.epfd.FDPort;
 import system.epfd.event.Restore;
 import system.epfd.event.Suspect;
 import system.network.TAddress;

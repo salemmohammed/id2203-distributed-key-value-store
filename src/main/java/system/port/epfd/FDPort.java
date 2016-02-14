@@ -1,4 +1,4 @@
-package system.epfd.port;
+package system.port.epfd;
 
 import se.sics.kompics.PortType;
 import system.epfd.event.Restore;

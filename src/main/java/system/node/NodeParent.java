@@ -6,8 +6,8 @@ import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
-import system.epfd.EventuallyPerfectFailureDetector;
-import system.epfd.port.FDPort;
+import system.epfd.EPFD;
+import system.port.epfd.FDPort;
 import system.network.TAddress;
 
 import java.util.ArrayList;
