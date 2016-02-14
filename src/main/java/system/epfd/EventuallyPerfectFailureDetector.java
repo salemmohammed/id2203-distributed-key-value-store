@@ -19,8 +19,7 @@ import java.util.UUID;
 /**
  * Created by Robin on 2016-02-13.
  */
-public class EPFD extends ComponentDefinition {
-
+public class EventuallyPerfectFailureDetector extends ComponentDefinition {
 
     private final ArrayList<TAddress> neighbours;
     private final ArrayList<TAddress> suspectedNodes;
@@ -33,7 +32,7 @@ public class EPFD extends ComponentDefinition {
     Positive<Timer> timer = requires(Timer.class);
     Negative<FDPort> epfd = provides(FDPort.class);
 
-    public EPFD(Init init) {
+    public EventuallyPerfectFailureDetector(Init init) {
         this.neighbours = init.neighbours;
         suspectedNodes = new ArrayList<>();
         aliveNodes = new ArrayList<>();
@@ -125,7 +124,7 @@ public class EPFD extends ComponentDefinition {
         }
     }
 
-    public static class Init extends se.sics.kompics.Init<EPFD> {
+    public static class Init extends se.sics.kompics.Init<EventuallyPerfectFailureDetector> {
         public final TAddress self;
         public final ArrayList<TAddress> neighbours;
 
