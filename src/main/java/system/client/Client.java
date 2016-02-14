@@ -6,8 +6,8 @@ import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
+import system.client.event.KeyValuePair;
 import system.network.TAddress;
-import system.node.Node;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,11 +36,11 @@ public class Client extends ComponentDefinition {
             Iterator it = nodes.iterator();
             while(it.hasNext()) {
                 TAddress node = (TAddress) it.next();
-                System.out.println("Sending 4 GETRequests to " + node);
-                trigger(new GETRequest(self, node), net);
-                trigger(new GETRequest(self, node), net);
-                trigger(new GETRequest(self, node), net);
-                trigger(new GETRequest(self, node), net);
+                System.out.println("Sending 1 GETRequests to " + node);
+                KeyValuePair keyValue = new KeyValuePair();
+                //Send to IP 1
+                keyValue.setKey(357903941);
+                trigger(new GETRequest(self, node, keyValue), net);
             }
         }
     };
@@ -48,7 +48,7 @@ public class Client extends ComponentDefinition {
     Handler<GETReply> getReplyHandler = new Handler<GETReply>() {
         @Override
         public void handle(GETReply getReply) {
-            System.out.println(self+": Received GETReply from " + getReply.getSource());
+            System.out.println(self+": Received GETReply KEY: " + getReply.getKeyValue().getKey() + " VALUE: " + getReply.getKeyValue().getValue());
         }
     };
 

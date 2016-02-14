@@ -18,59 +18,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
 public class ScenarioGen {
 
     static DatastoreFactory datastoreFactory = new DatastoreFactory();
 
-    static Operation1 evenNumberGroup = new Operation1<StartNodeEvent, Integer>() {
-        @Override
-        public StartNodeEvent generate(final Integer self) {
-            return new StartNodeEvent() {
-                TAddress selfAdr;
-                ArrayList<TAddress> neighbours = new ArrayList<>();
-                TAddress otherGroupLeader;
-                HashMap <Integer, Integer> store = new HashMap<>();
-                boolean isLeader;
-                {
-                    try {
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
-                        otherGroupLeader = new TAddress(InetAddress.getByName("192.193.0.4"), 10000);
-                        store = datastoreFactory.getEvenHashMapByIpSuffix(self);
-                        isLeader = false;
-                        if(self == 1) {
-                            isLeader = true;
-                        }
-                        for (int i = 1; i < 4; i++) {
-                            if (i != self) {
-                                neighbours.add(new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
-                            }
-                        }
-                    } catch (UnknownHostException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-
-                @Override
-                public Address getNodeAddress() {
-                    return selfAdr;
-                }
-
-                @Override
-                public Class getComponentDefinition() {
-                    return NodeParent.class;
-                }
-
-                @Override
-                public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, neighbours, otherGroupLeader, store, isLeader);
-                }
-            };
-        }
-    };
-
-    static Operation1 oddNumberGroup = new Operation1<StartNodeEvent, Integer>() {
+    static Operation1 nodeGroup = new Operation1<StartNodeEvent, Integer>() {
 
         @Override
         public StartNodeEvent generate(final Integer self) {
@@ -79,12 +32,14 @@ public class ScenarioGen {
                 ArrayList<TAddress> neighbours = new ArrayList<>();
                 TAddress otherGroupLeader;
                 HashMap <Integer, Integer> store = new HashMap<>();
+                ArrayList<TAddress> replicationGroup;
                 boolean isLeader;
                 {
                     try {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
                         otherGroupLeader = new TAddress(InetAddress.getByName("192.193.0.1"), 10000);
-                        store = datastoreFactory.getUnevenHashMapByIpSuffix(self);
+                        store = datastoreFactory.getHashMapByIpSuffix(self);
+                        replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
                         isLeader = false;
                         if(self == 4) {
                             isLeader = true;
@@ -112,7 +67,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, neighbours, otherGroupLeader, store, isLeader);
+                    return new NodeParent.Init(selfAdr, neighbours, otherGroupLeader, store, replicationGroup, isLeader);
                 }
             };
         }
@@ -183,18 +138,10 @@ public class ScenarioGen {
         SimulationScenario failureDetectionScenario = new SimulationScenario() {
             {
                 //Start three nodes holding even values
-                StochasticProcess evenNumberNodes = new StochasticProcess() {
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(3, evenNumberGroup, new BasicIntSequentialDistribution(1));
-                    }
-                };
-
-                //Start three nodes holding uneven values
-                StochasticProcess oddNumberNodes = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(0));
-                        raise(3, oddNumberGroup, new BasicIntSequentialDistribution(4));
+                        raise(6, nodeGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 
@@ -206,9 +153,7 @@ public class ScenarioGen {
                     }
                 };
 
-
-                evenNumberNodes.start();
-                oddNumberNodes.start();
+                nodeGroupProcess.start();
                 getClient.start();
 
                 terminateAfterTerminationOf(1000, getClient);
@@ -221,19 +166,12 @@ public class ScenarioGen {
     public static SimulationScenario testFailureDetection() {
         SimulationScenario failureDetectionScenario = new SimulationScenario() {
             {
-                //Start three nodes holding even values
-                StochasticProcess evenNumberNodes = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(0));
-                        raise(3, evenNumberGroup, new BasicIntSequentialDistribution(1));
-                    }
-                };
 
-                //Start three nodes holding uneven values
-                StochasticProcess oddNumberNodes = new StochasticProcess() {
+                //Start three nodes holding even values
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(3, oddNumberGroup, new BasicIntSequentialDistribution(4));
+                        raise(6, nodeGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 
@@ -244,15 +182,17 @@ public class ScenarioGen {
                     }
                 };
 
+
                 //Restart node in even group with ip ending with 2
                 StochasticProcess restartNode = new StochasticProcess() {
                     {
-                        raise(1, evenNumberGroup, new BasicIntSequentialDistribution(2));
+                        raise(1, nodeGroup, new BasicIntSequentialDistribution(2));
                     }
                 };
-                evenNumberNodes.start();
-                oddNumberNodes.start();
-                killNodeProcess.startAfterStartOf(500, oddNumberNodes);
+
+
+                nodeGroupProcess.start();
+                killNodeProcess.startAfterStartOf(500, nodeGroupProcess);
                 restartNode.startAfterStartOf(500, killNodeProcess);
                 terminateAfterTerminationOf(10000, restartNode);
             }

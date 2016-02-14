@@ -6,12 +6,11 @@ import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
+import system.client.event.KeyValuePair;
 import system.epfd.port.FDPort;
 import system.epfd.event.Restore;
 import system.epfd.event.Suspect;
 import system.network.TAddress;
-
-
 import java.util.*;
 
 public class Node extends ComponentDefinition {
@@ -20,6 +19,7 @@ public class Node extends ComponentDefinition {
     private final TAddress self;
     private final TAddress otherGroupLeader;
     private boolean isLeader;
+    private ArrayList<TAddress> replicationGroup;
 
     private HashMap<Integer, Integer> store;
     private final ArrayList<TAddress> neighbours;
@@ -33,6 +33,7 @@ public class Node extends ComponentDefinition {
         this.neighbours = init.neighbours;
         this.otherGroupLeader = init.otherGroupLeader;
         this.store = init.store;
+        this.replicationGroup = init.replicationGroup;
         this.isLeader = init.isLeader;
         startupAcks = new LinkedList<>();
 
@@ -49,15 +50,22 @@ public class Node extends ComponentDefinition {
                 public void handle(Start event) {
                     //Send initial message to verify connectivity
                     Iterator it = neighbours.iterator();
-                    LOG.info(self.toString() + ": Start Event Triggered (Store= " + store+")") ;
+                    LOG.info(self.toString() + ": Start Event Triggered (Store= " + store+")");
+                    LOG.info(self.toString() + ": Start Event Triggered (Replication= " + replicationGroup+")");
         }
     };
 
     Handler<GETRequest> getRequestHandler = new Handler<GETRequest>() {
         @Override
         public void handle(GETRequest getRequest) {
+            KeyValuePair keyValue = getRequest.getKeyValue();
+            int key = keyValue.getKey();
+            if(store.containsKey(key)) {
+                int value = store.get(key);
+                keyValue.setValue(value);
+            }
             System.out.println("Received GETRequest");
-            trigger(new GETReply(self, getRequest.getSource()), net);
+            trigger(new GETReply(self, getRequest.getSource(), keyValue), net);
         }
     };
 
@@ -82,12 +90,14 @@ public class Node extends ComponentDefinition {
         public final TAddress otherGroupLeader;
         public boolean isLeader;
         public HashMap<Integer, Integer> store;
+        public ArrayList<TAddress> replicationGroup;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, TAddress otherGroupLeader, HashMap<Integer, Integer> store, boolean isLeader) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, TAddress otherGroupLeader, HashMap<Integer, Integer> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
             this.self = self;
             this.neighbours = neighbours;
             this.otherGroupLeader = otherGroupLeader;
             this.store = store;
+            this.replicationGroup = replicationGroup;
             this.isLeader = isLeader;
         }
     }

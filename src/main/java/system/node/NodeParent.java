@@ -19,7 +19,7 @@ public class NodeParent extends ComponentDefinition {
     Positive<Timer> timer = requires(Timer.class);
 
     public NodeParent(Init init) {
-        Component node = create(Node.class, new Node.Init(init.self, init.neighbours, init.otherGroupLeader, init.store, init.isLeader));
+        Component node = create(Node.class, new Node.Init(init.self, init.neighbours, init.otherGroupLeader, init.store, init.replicationGroup, init.isLeader));
         connect(node.getNegative(Network.class), network, Channel.TWO_WAY);
 
         Component epfd = create(EPFD.class, new EPFD.Init(init.self, init.neighbours));
@@ -34,13 +34,15 @@ public class NodeParent extends ComponentDefinition {
         public ArrayList<TAddress> neighbours;
         public final TAddress otherGroupLeader;
         public HashMap <Integer, Integer> store;
+        ArrayList<TAddress> replicationGroup;
         public boolean isLeader;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, TAddress otherGroupLeader, HashMap<Integer, Integer> store, boolean isLeader) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, TAddress otherGroupLeader, HashMap<Integer, Integer> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
             this.self = self;
             this.neighbours = neighbours;
             this.otherGroupLeader = otherGroupLeader;
             this.store = store;
+            this.replicationGroup = replicationGroup;
             this.isLeader = isLeader;
         }
     }

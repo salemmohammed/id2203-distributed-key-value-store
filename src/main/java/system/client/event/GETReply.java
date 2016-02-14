@@ -10,11 +10,18 @@ import system.network.TMessage;
  */
 public class GETReply extends TMessage {
 
-    public GETReply(TAddress src, TAddress dst) {
+    private KeyValuePair keyValue;
+
+    public GETReply(TAddress src, TAddress dst, KeyValuePair keyValue) {
         super(src, dst, Transport.TCP);
+        this.keyValue = keyValue;
     }
 
     public GETReply(THeader header) {
         super(header);
+    }
+
+    public KeyValuePair getKeyValue() {
+        return keyValue;
     }
 }
