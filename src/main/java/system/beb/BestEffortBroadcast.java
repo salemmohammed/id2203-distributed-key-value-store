@@ -1,13 +1,13 @@
 package system.beb;
 
-import se.sics.kompics.ComponentDefinition;
-import se.sics.kompics.Handler;
-import se.sics.kompics.Negative;
-import se.sics.kompics.Start;
+import se.sics.kompics.*;
+import se.sics.kompics.network.Network;
 import system.beb.event.BebBroadcast;
 import system.beb.event.BebDataMessage;
 import system.beb.event.BebDeliver;
 import system.network.TAddress;
+import system.port.pp2p.PerfectPointToPointLinkPort;
+import system.port.pp2p.Pp2pSend;
 
 import java.util.ArrayList;
 
@@ -16,13 +16,16 @@ import java.util.ArrayList;
  */
 public class BestEffortBroadcast extends ComponentDefinition {
 
-    private Positive<PerfectPointToPointLink> pp2p = requires(PerfectPointToPointLink.class);
+    private Positive<Network> net = requires(Network.class);
     private Negative<BestEffortBroadcastPort> beb = provides(BestEffortBroadcastPort.class);
 
-    public BestEffortBroadcast() {
+    private TAddress self;
+
+    public BestEffortBroadcast(Init init) {
+        this.self = init.self;
         subscribe(startHandler, control);
         subscribe(broadcastHandler, beb);
-        subscribe(deliverHandler, pp2p);
+        subscribe(deliverHandler, net);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
@@ -39,9 +42,10 @@ public class BestEffortBroadcast extends ComponentDefinition {
             ArrayList <TAddress> nodes = event.getBroadcastNodes();
             for (TAddress node : nodes) {
                 BebDataMessage msg = new BebDataMessage(node, event.getDeliverEvent());
-                //logger.info("bcast to {}!", node.getId());
-                trigger(new Pp2pSend(node, msg), pp2p);
+                trigger(new Pp2pSend(node, msg), net);
             }
+            BebDataMessage msg = new BebDataMessage(self, event.getDeliverEvent());
+            trigger(new Pp2pSend(self, msg).getDeliverEvent(), net);
         }
     };
 
@@ -54,4 +58,11 @@ public class BestEffortBroadcast extends ComponentDefinition {
         }
     };
 
+    public static class Init extends se.sics.kompics.Init<BestEffortBroadcast> {
+        public TAddress self;
+
+        public Init(TAddress self) {
+            this.self = self;
+        }
+    }
 }
