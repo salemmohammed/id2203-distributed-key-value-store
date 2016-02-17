@@ -30,26 +30,20 @@ public class ScenarioGen {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> neighbours = new ArrayList<>();
-                TAddress otherGroupLeader;
                 HashMap <Integer, Integer> store = new HashMap<>();
                 ArrayList<TAddress> replicationGroup;
                 boolean isLeader;
                 {
                     try {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
-                        otherGroupLeader = new TAddress(InetAddress.getByName("192.193.0.1"), 10000);
                         store = datastoreFactory.getHashMapByIpSuffix(self);
                         replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
+                        neighbours = datastoreFactory.getNeighbours();
                         isLeader = false;
                         if(self == 4) {
                             isLeader = true;
                         }
 
-                        for (int i = 4; i < 7; i++) {
-                            if (i != self) {
-                                neighbours.add(new TAddress(InetAddress.getByName("192.193.0." + i), 10000));
-                            }
-                        }
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -67,7 +61,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, neighbours, otherGroupLeader, store, replicationGroup, isLeader);
+                    return new NodeParent.Init(selfAdr, neighbours, store, replicationGroup, isLeader);
                 }
             };
         }
@@ -141,7 +135,7 @@ public class ScenarioGen {
                 StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(6, nodeGroup, new BasicIntSequentialDistribution(1));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 
@@ -171,7 +165,7 @@ public class ScenarioGen {
                 StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(6, nodeGroup, new BasicIntSequentialDistribution(1));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 

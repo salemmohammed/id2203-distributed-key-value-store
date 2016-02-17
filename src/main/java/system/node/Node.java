@@ -17,7 +17,6 @@ public class Node extends ComponentDefinition {
 
     private static final Logger LOG = LoggerFactory.getLogger(Node.class);
     private final TAddress self;
-    private final TAddress otherGroupLeader;
     private boolean isLeader;
     private ArrayList<TAddress> replicationGroup;
 
@@ -31,7 +30,6 @@ public class Node extends ComponentDefinition {
     public Node(Init init) {
         this.self = init.self;
         this.neighbours = init.neighbours;
-        this.otherGroupLeader = init.otherGroupLeader;
         this.store = init.store;
         this.replicationGroup = init.replicationGroup;
         this.isLeader = init.isLeader;
@@ -87,15 +85,13 @@ public class Node extends ComponentDefinition {
 
         public final TAddress self;
         public final ArrayList<TAddress> neighbours;
-        public final TAddress otherGroupLeader;
         public boolean isLeader;
         public HashMap<Integer, Integer> store;
         public ArrayList<TAddress> replicationGroup;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, TAddress otherGroupLeader, HashMap<Integer, Integer> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, Integer> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
             this.self = self;
             this.neighbours = neighbours;
-            this.otherGroupLeader = otherGroupLeader;
             this.store = store;
             this.replicationGroup = replicationGroup;
             this.isLeader = isLeader;
