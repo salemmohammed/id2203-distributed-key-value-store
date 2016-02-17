@@ -1,6 +1,6 @@
 package sim.preload;
 
-import system.client.event.ValueTimestampPair;
+import system.KVEntry;
 import system.network.TAddress;
 
 import java.net.InetAddress;
@@ -13,11 +13,11 @@ import java.util.HashMap;
  */
 public class DatastoreFactory {
 
-    static HashMap<Integer, ValueTimestampPair> [] stores = new HashMap[6];
+    static HashMap<Integer, KVEntry> [] stores = new HashMap[6];
     //Even number maps
-    static HashMap<Integer, ValueTimestampPair> store1 = new HashMap<>();
-    static HashMap<Integer, ValueTimestampPair> store2 = new HashMap<>();
-    static HashMap<Integer, ValueTimestampPair> store3 = new HashMap<>();
+    static HashMap<Integer, KVEntry> store1 = new HashMap<>();
+    static HashMap<Integer, KVEntry> store2 = new HashMap<>();
+    static HashMap<Integer, KVEntry> store3 = new HashMap<>();
 
     static ArrayList<TAddress> replicationGroup1 = new ArrayList<>();
     static ArrayList<TAddress> replicationGroup2 = new ArrayList<>();
@@ -29,9 +29,9 @@ public class DatastoreFactory {
 
     {
         int split = Integer.MAX_VALUE/3;
-        store1.put(split - 10000,new ValueTimestampPair(0,3532));
-        store2.put(2*split - 14234,new ValueTimestampPair(0,4224));
-        store3.put(3*split - 13224,new ValueTimestampPair(0,234234));
+        store1.put(split - 10000,new KVEntry(0,3532));
+        store2.put(2*split - 14234,new KVEntry(0,4224));
+        store3.put(3*split - 13224,new KVEntry(0,234234));
         stores[0] = store1;
         stores[1] = store2;
         stores[2] = store3;
@@ -82,7 +82,7 @@ public class DatastoreFactory {
 
     }
 
-    public static HashMap<Integer, ValueTimestampPair> getHashMapByIpSuffix(int suffix) {
+    public static HashMap<Integer, KVEntry> getHashMapByIpSuffix(int suffix) {
         return stores[arrayId(suffix)];
     }
 

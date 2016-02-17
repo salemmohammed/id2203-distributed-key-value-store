@@ -7,9 +7,8 @@ import se.sics.kompics.network.Network;
 import system.beb.BestEffortBroadcastPort;
 import system.beb.event.BebBroadcastRequest;
 import system.beb.event.BebDeliver;
-import system.client.event.ValueTimestampPair;
-import system.coordination.event.ReadRequest;
-import system.coordination.event.ReadResponseMessage;
+import system.KVEntry;
+import system.coordination.event.*;
 import system.network.TAddress;
 
 import java.util.ArrayList;
@@ -23,16 +22,20 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
     private int wts;
     private int acks;
     private int rid;
-    private ArrayList<Integer> readlist = new ArrayList<>();
+    private ArrayList<KVEntry> readlist = new ArrayList<>();
     private boolean reading = false;
     private int readval;
     private Positive<BestEffortBroadcastPort> beb = requires(BestEffortBroadcastPort.class);
     private Positive<Network> net = requires(Network.class);
     private TAddress self;
-    private HashMap<Integer, ValueTimestampPair> store;
+    private HashMap<Integer, KVEntry> store;
+    private ArrayList<TAddress> neighbours;
 
 
 
+
+
+    // Algorithm 4.6: 1.1
     public ReadImposeWriteMajority(Init init) {
         this.wts = 0;
         this.acks = 0;
@@ -44,43 +47,102 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
 
     }
 
-    Handler<ReadRequest> initReadHandler = new Handler<ReadRequest>() {
+    // Algorithm 4.6: 1.2
+    Handler<InitReadRequest> initReadHandler = new Handler<InitReadRequest>() {
         @Override
-        public void handle(ReadRequest event) {
+        public void handle(InitReadRequest event) {
             rid += 1;
             acks = 0;
             readlist = new ArrayList<>();
             reading = true;
 
-            trigger(new BebBroadcastRequest(new BebDeliver(self,new Integer(event.getKey())), event.getNeighbours()),beb);
+            neighbours = neighbours;
+
+
+            trigger(new BebBroadcastRequest(
+                    new BebDeliver(self, new ReadRequest(event.getKey(),rid, neighbours)),
+                    neighbours),beb);
         }
     };
 
 
+    // Algorithm 4.6: 1.3
     Handler<BebDeliver> readRequestHandler = new Handler<BebDeliver>() {
         @Override
         public void handle(BebDeliver event) {
-            Integer key = (Integer) event.getData();
-            ValueTimestampPair vtp = store.get(key);
-            trigger(new ReadResponseMessage(self,event.getSource(),vtp), net);
-
-
+            ReadRequest request = (ReadRequest) event.getData();
+            Integer key = request.getKey();
+            int r = request.getrId();
+            KVEntry kv = store.get(key);
+            kv.setTimestamp(r);
+            trigger(new ReadResponseMessage(self,event.getSource(),kv, r), net);
         }
     };
 
-
-    Handler<BebDeliver> ackHandler = new Handler<BebDeliver>() {
+    // Algorithm 4.6: 1.4
+    Handler<ReadResponseMessage> readResponseHandler = new Handler<ReadResponseMessage>() {
         @Override
-        public void handle(BebDeliver event) {
+        public void handle(ReadResponseMessage event) {
 
+            int r = event.getrId();
+
+            if(r == rid) {
+                KVEntry vtp = event.getValueTimestampPair();
+                readlist.add(vtp);
+
+                if(readlist.size() >= 2) {
+                    KVEntry maxPair = getMaxTimestampPair();
+                    readlist = new ArrayList<>();
+
+
+                    trigger(new BebBroadcastRequest(
+                            new BebDeliver(self,new WriteRequest(maxPair)),
+                            neighbours),beb);
+                }
+            }
         }
     };
+
+
+
+
+    // Algorithm 4.6: 1.5
+    Handler<InitWriteRequest> handleInitWriteRequest = new Handler<InitWriteRequest>() {
+        @Override
+        public void handle(InitWriteRequest event) {
+            rid++;
+            wts++;
+            acks = 0;
+
+            trigger(new BebBroadcastRequest(
+                    new BebDeliver(self,new WriteRequest(event.getKVEntry(),wts)),
+                    neighbours),beb);
+        }
+    };
+
+
+
+
+
+
+    private KVEntry getMaxTimestampPair() {
+        KVEntry max = new KVEntry(-1, -1, -1);
+        for(KVEntry pair : readlist) {
+            if(pair.getTimestamp() > max.getTimestamp()) {
+                max = pair;
+            }
+        }
+        return max;
+    }
+
+
+
 
     public static class Init extends se.sics.kompics.Init<ReadImposeWriteMajority> {
         public final TAddress self;
-        public final HashMap<Integer, ValueTimestampPair> store;
+        public final HashMap<Integer, KVEntry> store;
 
-        public Init(TAddress self, HashMap<Integer, ValueTimestampPair> store) {
+        public Init(TAddress self, HashMap<Integer, KVEntry> store) {
             this.self = self;
             this.store = store;
         }

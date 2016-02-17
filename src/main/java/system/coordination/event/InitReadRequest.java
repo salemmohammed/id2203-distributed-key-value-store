@@ -8,10 +8,9 @@ import java.util.ArrayList;
 /**
  * Created by marcus on 17/02/16.
  */
-public class ReadRequest implements KompicsEvent {
+public class InitReadRequest implements KompicsEvent {
 
     private Integer key ;
-    private int rId;
     private ArrayList<TAddress> neighbours;
 
     public ArrayList<TAddress> getNeighbours() {
@@ -23,13 +22,8 @@ public class ReadRequest implements KompicsEvent {
         return key;
     }
 
-    public int getrId() {
-        return rId;
-    }
-
-    public ReadRequest(Integer key,int rId, ArrayList<TAddress> neighbours) {
+    public InitReadRequest(Integer key, ArrayList<TAddress> neighbours) {
         this.key = key;
         this.neighbours = neighbours;
-        this.rId = rId;
     }
 }

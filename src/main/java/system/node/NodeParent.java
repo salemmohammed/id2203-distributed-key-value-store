@@ -8,7 +8,7 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 import system.beb.BestEffortBroadcast;
 import system.beb.BestEffortBroadcastPort;
-import system.client.event.ValueTimestampPair;
+import system.KVEntry;
 import system.coordination.ReadImposeWriteMajority;
 import system.coordination.port.RIWMPort;
 import system.epfd.EventuallyPerfectFailureDetector;
@@ -46,11 +46,11 @@ public class NodeParent extends ComponentDefinition {
 
         public final TAddress self;
         public ArrayList<TAddress> neighbours;
-        public HashMap <Integer, ValueTimestampPair> store;
+        public HashMap <Integer, KVEntry> store;
         ArrayList<TAddress> replicationGroup;
         public boolean isLeader;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, ValueTimestampPair> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
             this.self = self;
             this.neighbours = neighbours;
             this.store = store;

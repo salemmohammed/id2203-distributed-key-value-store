@@ -1,10 +1,7 @@
 package system.coordination.event;
 
-import se.sics.kompics.Event;
-import se.sics.kompics.KompicsEvent;
-import se.sics.kompics.config.ValueMerger;
 import se.sics.kompics.network.Transport;
-import system.client.event.ValueTimestampPair;
+import system.KVEntry;
 import system.network.TAddress;
 import system.network.TMessage;
 
@@ -13,14 +10,20 @@ import system.network.TMessage;
  */
 public class ReadResponseMessage extends TMessage{
 
-    private ValueTimestampPair pair;
+    private KVEntry kv;
+    private int rId;
 
-    public ReadResponseMessage(TAddress source, TAddress destination, ValueTimestampPair pair) {
+    public ReadResponseMessage(TAddress source, TAddress destination, KVEntry kv, int rId) {
         super(source, destination, Transport.TCP);
-        this.pair = pair;
+        this.kv = kv;
+        this.rId = rId;
     }
 
-    public ValueTimestampPair getValueTimestampPair() {
-        return this.pair;
+    public KVEntry getValueTimestampPair() {
+        return this.kv;
+    }
+
+    public int getrId() {
+        return rId;
     }
 }

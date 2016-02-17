@@ -6,7 +6,7 @@ import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
-import system.client.event.ValueTimestampPair;
+import system.KVEntry;
 import system.coordination.port.RIWMPort;
 import system.port.epfd.FDPort;
 import system.epfd.event.Restore;
@@ -21,7 +21,7 @@ public class Node extends ComponentDefinition {
     private boolean isLeader;
     private ArrayList<TAddress> replicationGroup;
 
-    private HashMap<Integer, ValueTimestampPair> store;
+    private HashMap<Integer, KVEntry> store;
     private final ArrayList<TAddress> neighbours;
     Positive<Network> net = requires(Network.class);
     Positive<FDPort> epfd = requires(FDPort.class);
@@ -60,7 +60,7 @@ public class Node extends ComponentDefinition {
         public void handle(GETRequest getRequest) {
             int key = getRequest.getKey();
             System.out.println("Received GETRequest");
-            trigger(new GETReply(self, getRequest.getSource(), keyValue), net);
+            trigger(new GETReply(self, getRequest.getSource(), key), net);
         }
     };
 
@@ -83,10 +83,10 @@ public class Node extends ComponentDefinition {
         public final TAddress self;
         public final ArrayList<TAddress> neighbours;
         public boolean isLeader;
-        public HashMap<Integer, ValueTimestampPair> store;
+        public HashMap<Integer, KVEntry> store;
         public ArrayList<TAddress> replicationGroup;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, ValueTimestampPair> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
             this.self = self;
             this.neighbours = neighbours;
             this.store = store;
