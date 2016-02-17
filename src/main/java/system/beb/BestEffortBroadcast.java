@@ -6,8 +6,6 @@ import system.beb.event.BebBroadcast;
 import system.beb.event.BebDataMessage;
 import system.beb.event.BebDeliver;
 import system.network.TAddress;
-import system.port.pp2p.PerfectPointToPointLinkPort;
-import system.port.pp2p.Pp2pSend;
 
 import java.util.ArrayList;
 
@@ -42,10 +40,10 @@ public class BestEffortBroadcast extends ComponentDefinition {
             ArrayList <TAddress> nodes = event.getBroadcastNodes();
             for (TAddress node : nodes) {
                 BebDataMessage msg = new BebDataMessage(node, event.getDeliverEvent());
-                trigger(new Pp2pSend(node, msg), net);
+                trigger(msg, net);
             }
             BebDataMessage msg = new BebDataMessage(self, event.getDeliverEvent());
-            trigger(new Pp2pSend(self, msg).getDeliverEvent(), net);
+            trigger(new BebDataMessage(self, event.getDeliverEvent(), net));
         }
     };
 
