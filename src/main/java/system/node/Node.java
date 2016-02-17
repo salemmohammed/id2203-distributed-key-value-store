@@ -6,7 +6,8 @@ import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
-import system.client.event.KeyValuePair;
+import system.client.event.ValueTimestampPair;
+import system.coordination.port.RIWMPort;
 import system.port.epfd.FDPort;
 import system.epfd.event.Restore;
 import system.epfd.event.Suspect;
@@ -20,10 +21,11 @@ public class Node extends ComponentDefinition {
     private boolean isLeader;
     private ArrayList<TAddress> replicationGroup;
 
-    private HashMap<Integer, Integer> store;
+    private HashMap<Integer, ValueTimestampPair> store;
     private final ArrayList<TAddress> neighbours;
     Positive<Network> net = requires(Network.class);
     Positive<FDPort> epfd = requires(FDPort.class);
+    Positive<RIWMPort> riwm = requires(RIWMPort.class);
     private LinkedList<TAddress> startupAcks;
 
 
@@ -56,12 +58,7 @@ public class Node extends ComponentDefinition {
     Handler<GETRequest> getRequestHandler = new Handler<GETRequest>() {
         @Override
         public void handle(GETRequest getRequest) {
-            KeyValuePair keyValue = getRequest.getKeyValue();
-            int key = keyValue.getKey();
-            if(store.containsKey(key)) {
-                int value = store.get(key);
-                keyValue.setValue(value);
-            }
+            int key = getRequest.getKey();
             System.out.println("Received GETRequest");
             trigger(new GETReply(self, getRequest.getSource(), keyValue), net);
         }
@@ -86,10 +83,10 @@ public class Node extends ComponentDefinition {
         public final TAddress self;
         public final ArrayList<TAddress> neighbours;
         public boolean isLeader;
-        public HashMap<Integer, Integer> store;
+        public HashMap<Integer, ValueTimestampPair> store;
         public ArrayList<TAddress> replicationGroup;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, Integer> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, ValueTimestampPair> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
             this.self = self;
             this.neighbours = neighbours;
             this.store = store;

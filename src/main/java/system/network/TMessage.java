@@ -16,7 +16,8 @@ public abstract class TMessage implements Msg<TAddress, THeader> {
     public TMessage(THeader header) {
         this.header = header;
     }
-    
+
+
     @Override
     public THeader getHeader() {
         return this.header;

@@ -10,9 +10,9 @@ import system.network.TMessage;
  */
 public class GETReply extends TMessage {
 
-    private KeyValuePair keyValue;
+    private ValueTimestampPair keyValue;
 
-    public GETReply(TAddress src, TAddress dst, KeyValuePair keyValue) {
+    public GETReply(TAddress src, TAddress dst, ValueTimestampPair keyValue) {
         super(src, dst, Transport.TCP);
         this.keyValue = keyValue;
     }
@@ -21,7 +21,7 @@ public class GETReply extends TMessage {
         super(header);
     }
 
-    public KeyValuePair getKeyValue() {
+    public ValueTimestampPair getKeyValue() {
         return keyValue;
     }
 }

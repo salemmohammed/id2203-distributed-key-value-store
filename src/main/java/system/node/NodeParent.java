@@ -6,6 +6,11 @@ import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
+import system.beb.BestEffortBroadcast;
+import system.beb.BestEffortBroadcastPort;
+import system.client.event.ValueTimestampPair;
+import system.coordination.ReadImposeWriteMajority;
+import system.coordination.port.RIWMPort;
 import system.epfd.EventuallyPerfectFailureDetector;
 import system.port.epfd.FDPort;
 import system.network.TAddress;
@@ -26,17 +31,26 @@ public class NodeParent extends ComponentDefinition {
         connect(epfd.getNegative(Network.class), network, Channel.TWO_WAY);
         connect(node.getNegative(FDPort.class), epfd.getPositive(FDPort.class), Channel.TWO_WAY);
         connect(epfd.getNegative(Timer.class), timer, Channel.TWO_WAY);
+
+        Component riwm = create(ReadImposeWriteMajority.class, new ReadImposeWriteMajority.Init(init.self, init.neighbours,init.store));
+        connect(node.getNegative(RIWMPort.class), riwm.getPositive(RIWMPort.class), Channel.TWO_WAY);
+        connect(riwm.getNegative(Network.class),network, Channel.TWO_WAY);
+
+        Component beb = create(BestEffortBroadcast.class, new BestEffortBroadcast.Init(init.self));
+        connect(beb.getNegative(Network.class),network, Channel.TWO_WAY);
+        connect(riwm.getNegative(BestEffortBroadcastPort.class), beb.getPositive(BestEffortBroadcastPort.class), Channel.TWO_WAY);
+
     }
 
     public static class Init extends se.sics.kompics.Init<NodeParent> {
 
         public final TAddress self;
         public ArrayList<TAddress> neighbours;
-        public HashMap <Integer, Integer> store;
+        public HashMap <Integer, ValueTimestampPair> store;
         ArrayList<TAddress> replicationGroup;
         public boolean isLeader;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, Integer> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, ValueTimestampPair> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
             this.self = self;
             this.neighbours = neighbours;
             this.store = store;

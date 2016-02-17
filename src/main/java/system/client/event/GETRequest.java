@@ -10,18 +10,18 @@ import system.network.TMessage;
  */
 public class GETRequest extends TMessage {
 
-    private KeyValuePair keyValue;
+    private int key;
 
-    public GETRequest(TAddress src, TAddress dst, KeyValuePair keyValue) {
+    public GETRequest(TAddress src, TAddress dst, int key) {
         super(src, dst, Transport.TCP);
-        this.keyValue = keyValue;
+        this.key = key;
     }
 
     public GETRequest(THeader header) {
         super(header);
     }
 
-    public KeyValuePair getKeyValue() {
-        return keyValue;
+    public int getKey() {
+        return key;
     }
 }

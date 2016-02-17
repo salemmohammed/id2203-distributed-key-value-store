@@ -1,8 +1,8 @@
 package sim.preload;
 
+import system.client.event.ValueTimestampPair;
 import system.network.TAddress;
 
-import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -13,11 +13,11 @@ import java.util.HashMap;
  */
 public class DatastoreFactory {
 
-    static HashMap<Integer, Integer> [] stores = new HashMap[6];
+    static HashMap<Integer, ValueTimestampPair> [] stores = new HashMap[6];
     //Even number maps
-    static HashMap<Integer, Integer> store1 = new HashMap<>();
-    static HashMap<Integer, Integer> store2 = new HashMap<>();
-    static HashMap<Integer, Integer> store3 = new HashMap<>();
+    static HashMap<Integer, ValueTimestampPair> store1 = new HashMap<>();
+    static HashMap<Integer, ValueTimestampPair> store2 = new HashMap<>();
+    static HashMap<Integer, ValueTimestampPair> store3 = new HashMap<>();
 
     static ArrayList<TAddress> replicationGroup1 = new ArrayList<>();
     static ArrayList<TAddress> replicationGroup2 = new ArrayList<>();
@@ -28,10 +28,10 @@ public class DatastoreFactory {
     static ArrayList<TAddress> neighbours = new ArrayList<>();
 
     {
-        int split = Integer.MAX_VALUE/6;
-        store1.put(split - 10000,3532);
-        store2.put(2*split - 14234,4224);
-        store3.put(3*split - 13224,4224);
+        int split = Integer.MAX_VALUE/3;
+        store1.put(split - 10000,new ValueTimestampPair(0,3532));
+        store2.put(2*split - 14234,new ValueTimestampPair(0,4224));
+        store3.put(3*split - 13224,new ValueTimestampPair(0,234234));
         stores[0] = store1;
         stores[1] = store2;
         stores[2] = store3;
@@ -82,7 +82,7 @@ public class DatastoreFactory {
 
     }
 
-    public static HashMap<Integer, Integer> getHashMapByIpSuffix(int suffix) {
+    public static HashMap<Integer, ValueTimestampPair> getHashMapByIpSuffix(int suffix) {
         return stores[arrayId(suffix)];
     }
 

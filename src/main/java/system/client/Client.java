@@ -6,7 +6,7 @@ import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
-import system.client.event.KeyValuePair;
+import system.client.event.ValueTimestampPair;
 import system.network.TAddress;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class Client extends ComponentDefinition {
             while(it.hasNext()) {
                 TAddress node = (TAddress) it.next();
                 System.out.println("Sending 1 GETRequests to " + node);
-                KeyValuePair keyValue = new KeyValuePair();
+                ValueTimestampPair keyValue = new ValueTimestampPair();
                 //Send to IP 1
                 keyValue.setKey(357903941);
                 trigger(new GETRequest(self, node, keyValue), net);

@@ -39,10 +39,10 @@ public class BestEffortBroadcast extends ComponentDefinition {
         public void handle(BebBroadcastRequest event) {
             ArrayList <TAddress> nodes = event.getBroadcastNodes();
             for (TAddress node : nodes) {
-                BebDataMessage msg = new BebDataMessage(node, event.getDeliverEvent());
+                BebDataMessage msg = new BebDataMessage(self,node, event.getDeliverEvent());
                 trigger(msg, net);
             }
-            BebDataMessage msg = new BebDataMessage(self, event.getDeliverEvent());
+            BebDataMessage msg = new BebDataMessage(self,self, event.getDeliverEvent());
             trigger(msg, net);
         }
     };
