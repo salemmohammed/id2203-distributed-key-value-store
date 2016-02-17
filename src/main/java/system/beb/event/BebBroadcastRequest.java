@@ -8,12 +8,12 @@ import java.util.ArrayList;
 /**
  * Created by Robin on 2016-02-14.
  */
-public class BebBroadcast implements KompicsEvent {
+public class BebBroadcastRequest implements KompicsEvent {
 
     private final BebDeliver deliverEvent;
     private final ArrayList <TAddress> nodes;
 
-    public BebBroadcast(BebDeliver deliverEvent, ArrayList <TAddress> nodes) {
+    public BebBroadcastRequest(BebDeliver deliverEvent, ArrayList <TAddress> nodes) {
         this.deliverEvent = deliverEvent;
         this.nodes = nodes;
     }

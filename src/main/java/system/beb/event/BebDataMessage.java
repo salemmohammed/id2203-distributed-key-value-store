@@ -7,12 +7,12 @@ import system.network.TAddress;
  * Created by Robin on 2016-02-14.
  */
 public class BebDataMessage implements KompicsEvent {
-    private static final long serialVersionUID = 9183185042302932366L;
+
+    private TAddress source;
     private BebDeliver data;
 
     public BebDataMessage(TAddress source, BebDeliver data) {
-
-
+        this.source = source;
         this.data = data;
     }
 

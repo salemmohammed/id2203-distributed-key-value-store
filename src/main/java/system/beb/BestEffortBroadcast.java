@@ -2,7 +2,7 @@ package system.beb;
 
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
-import system.beb.event.BebBroadcast;
+import system.beb.event.BebBroadcastRequest;
 import system.beb.event.BebDataMessage;
 import system.beb.event.BebDeliver;
 import system.network.TAddress;
@@ -34,25 +34,25 @@ public class BestEffortBroadcast extends ComponentDefinition {
     };
 
     //Perform broadcast using Perfect Links
-    private Handler<BebBroadcast> broadcastHandler = new Handler<BebBroadcast>() {
+    private Handler<BebBroadcastRequest> broadcastHandler = new Handler<BebBroadcastRequest>() {
         @Override
-        public void handle(BebBroadcast event) {
+        public void handle(BebBroadcastRequest event) {
             ArrayList <TAddress> nodes = event.getBroadcastNodes();
             for (TAddress node : nodes) {
                 BebDataMessage msg = new BebDataMessage(node, event.getDeliverEvent());
                 trigger(msg, net);
             }
             BebDataMessage msg = new BebDataMessage(self, event.getDeliverEvent());
-            //trigger(new BebDataMessage(self, event.getDeliverEvent(), net));
+            trigger(msg, net);
         }
     };
 
     //Deliver to application
-    private Handler<BebDeliver> deliverHandler = new Handler<BebDeliver>() {
+    private Handler<BebDataMessage> deliverHandler = new Handler<BebDataMessage>() {
         @Override
-        public void handle(BebDeliver event) {
+        public void handle(BebDataMessage event) {
             //logger.info("Node {} received delivery event", self);
-            trigger(event.getMessage(), beb);
+            trigger(event.getData(), beb);
         }
     };
 
