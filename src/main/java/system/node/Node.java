@@ -7,6 +7,8 @@ import se.sics.kompics.network.Network;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
 import system.KVEntry;
+import system.coordination.event.InitReadRequest;
+import system.coordination.event.ReadReturn;
 import system.coordination.port.RIWMPort;
 import system.port.epfd.FDPort;
 import system.epfd.event.Restore;
@@ -42,6 +44,8 @@ public class Node extends ComponentDefinition {
         subscribe(suspectHandler, epfd);
         subscribe(restoreHandler, epfd);
 
+        subscribe(readReturnHandler, riwm);
+
         subscribe(getRequestHandler, net);
     }
 
@@ -58,9 +62,17 @@ public class Node extends ComponentDefinition {
     Handler<GETRequest> getRequestHandler = new Handler<GETRequest>() {
         @Override
         public void handle(GETRequest getRequest) {
-            int key = getRequest.getKey();
-            System.out.println("Received GETRequest");
-            trigger(new GETReply(self, getRequest.getSource(), key), net);
+            int split = Integer.MAX_VALUE/3;
+            int key = split - 10000;
+            InitReadRequest initReadRequest = new InitReadRequest(key, neighbours);
+            trigger(initReadRequest, riwm);
+        }
+    };
+
+    Handler<ReadReturn> readReturnHandler = new Handler<ReadReturn>() {
+        @Override
+        public void handle(ReadReturn readReturn) {
+            System.out.println("I got readreturn yay" + readReturn.getValue());
         }
     };
 

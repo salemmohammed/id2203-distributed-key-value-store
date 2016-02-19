@@ -12,11 +12,6 @@ public class ReadRequest implements KompicsEvent {
 
     private Integer key ;
     private int rId;
-    private ArrayList<TAddress> neighbours;
-
-    public ArrayList<TAddress> getNeighbours() {
-        return neighbours;
-    }
 
 
     public Integer getKey() {
@@ -27,9 +22,8 @@ public class ReadRequest implements KompicsEvent {
         return rId;
     }
 
-    public ReadRequest(Integer key,int rId, ArrayList<TAddress> neighbours) {
+    public ReadRequest(Integer key,int rId) {
         this.key = key;
-        this.neighbours = neighbours;
         this.rId = rId;
     }
 }

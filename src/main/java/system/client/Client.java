@@ -37,7 +37,7 @@ public class Client extends ComponentDefinition {
             while(it.hasNext()) {
                 TAddress node = (TAddress) it.next();
                 System.out.println("Sending 1 GETRequests to " + node);
-                KVEntry keyValue = new KVEntry();
+                KVEntry keyValue = new KVEntry(0,0,0);
                 //Send to IP 1
                 keyValue.setKey(357903941);
                 trigger(new GETRequest(self, node, keyValue), net);
@@ -48,7 +48,7 @@ public class Client extends ComponentDefinition {
     Handler<GETReply> getReplyHandler = new Handler<GETReply>() {
         @Override
         public void handle(GETReply getReply) {
-            System.out.println(self+": Received GETReply KEY: " + getReply.getKeyValue().getKey() + " VALUE: " + getReply.getKeyValue().getValue());
+         //   System.out.println(self+": Received GETReply KEY: " + getReply.getKeyValue().getKey() + " VALUE: " + getReply.getKeyValue().getValue());
         }
     };
 

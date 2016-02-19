@@ -1,6 +1,7 @@
 package system.client.event;
 
 import se.sics.kompics.network.Transport;
+import system.KVEntry;
 import system.network.TAddress;
 import system.network.THeader;
 import system.network.TMessage;
@@ -10,18 +11,18 @@ import system.network.TMessage;
  */
 public class GETRequest extends TMessage {
 
-    private int key;
+    private KVEntry kv;
 
-    public GETRequest(TAddress src, TAddress dst, int key) {
+    public GETRequest(TAddress src, TAddress dst, KVEntry kv) {
         super(src, dst, Transport.TCP);
-        this.key = key;
+        this.kv = kv;
     }
 
     public GETRequest(THeader header) {
         super(header);
     }
 
-    public int getKey() {
-        return key;
+    public KVEntry getKv() {
+        return kv;
     }
 }

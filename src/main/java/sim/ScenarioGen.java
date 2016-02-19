@@ -3,6 +3,7 @@ import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.simulator.adaptor.Operation;
 import se.sics.kompics.simulator.events.system.KillNodeEvent;
 import sim.preload.DatastoreFactory;
+import system.KVEntry;
 import system.client.ClientParent;
 import system.node.NodeParent;
 import system.network.TAddress;
@@ -30,7 +31,7 @@ public class ScenarioGen {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> neighbours = new ArrayList<>();
-                HashMap <Integer, Integer> store = new HashMap<>();
+                HashMap <Integer, KVEntry> store = new HashMap<>();
                 ArrayList<TAddress> replicationGroup;
                 boolean isLeader;
                 {

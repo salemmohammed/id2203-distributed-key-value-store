@@ -10,7 +10,29 @@ import system.network.TMessage;
 
 
 public class AckWrite extends TMessage{
-    public AckWrite(TAddress src, TAddress dst,) {
+    private Integer key;
+    private Integer rid;
+
+    public AckWrite(TAddress src, TAddress dst, Integer key, Integer rid) {
         super(src, dst, Transport.TCP);
+        this.key = key;
+        this.setRid(rid);
+
+    }
+
+    public Integer getKey() {
+        return key;
+    }
+
+    public void setKey(Integer key) {
+        this.key = key;
+    }
+
+    public Integer getRid() {
+        return rid;
+    }
+
+    public void setRid(Integer rid) {
+        this.rid = rid;
     }
 }

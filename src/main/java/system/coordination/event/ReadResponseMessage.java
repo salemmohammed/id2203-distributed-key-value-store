@@ -19,7 +19,7 @@ public class ReadResponseMessage extends TMessage{
         this.rId = rId;
     }
 
-    public KVEntry getValueTimestampPair() {
+    public KVEntry getKv() {
         return this.kv;
     }
 

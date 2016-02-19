@@ -14,19 +14,19 @@ public class WriteRequest implements KompicsEvent{
 
     private KVEntry kv;
 
-    public int getWts() {
-        return wts;
+    public int getRid() {
+        return rid;
     }
 
-    public void setWts(int wts) {
-        this.wts = wts;
+    public void setRid(int wts) {
+        this.rid = wts;
     }
 
-    private int wts;
+    private int rid;
 
-    public WriteRequest(KVEntry kv, int wts) {
+    public WriteRequest(KVEntry kv, int rid) {
         this.kv = kv;
-        this.wts = wts;
+        this.rid = rid;
     }
 
     public KVEntry getKVEntry() {

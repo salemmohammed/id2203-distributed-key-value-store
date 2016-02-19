@@ -29,9 +29,9 @@ public class DatastoreFactory {
 
     {
         int split = Integer.MAX_VALUE/3;
-        store1.put(split - 10000,new KVEntry(0,3532));
-        store2.put(2*split - 14234,new KVEntry(0,4224));
-        store3.put(3*split - 13224,new KVEntry(0,234234));
+        store1.put(split - 10000,new KVEntry(split - 100000,3532, 0));
+        store2.put(2*split - 14234,new KVEntry(2*split - 14234, 323, 0));
+        store3.put(3*split - 13224,new KVEntry(3*split - 13224, 5644, 0));
         stores[0] = store1;
         stores[1] = store2;
         stores[2] = store3;
