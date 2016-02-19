@@ -2,8 +2,10 @@ package system.coordination;
 
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
+import se.sics.kompics.KompicsEvent;
 import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
+import se.sics.kompics.network.Transport;
 import system.beb.BestEffortBroadcastPort;
 import system.beb.event.BebBroadcastRequest;
 import system.beb.event.BebDeliver;
@@ -47,6 +49,21 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
 
     }
 
+
+    Handler<BebDeliver> bebDeliverHander = new Handler<BebDeliver>() {
+        @Override
+        public void handle(BebDeliver event) {
+
+            if(event.getData() instanceof ReadRequest) {
+                handleReadRequest(event.getSource(), (ReadRequest) event.getData());
+            }
+
+            if(event.getData() instanceof WriteRequest) {
+                handleWriteRequest(event.getSource(), (WriteRequest) event.getData());
+            }
+        }
+    };
+
     // Algorithm 4.6: 1.2
     Handler<InitReadRequest> initReadHandler = new Handler<InitReadRequest>() {
         @Override
@@ -67,15 +84,20 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
 
 
     // Algorithm 4.6: 1.3
+    private void handleReadRequest(TAddress source,ReadRequest request) {
+        Integer key = request.getKey();
+        int r = request.getrId();
+        KVEntry kv = store.get(key);
+        kv.setTimestamp(r);
+        trigger(new ReadResponseMessage(self,source,kv, r), net);
+    }
+
+
+
     Handler<BebDeliver> readRequestHandler = new Handler<BebDeliver>() {
         @Override
         public void handle(BebDeliver event) {
             ReadRequest request = (ReadRequest) event.getData();
-            Integer key = request.getKey();
-            int r = request.getrId();
-            KVEntry kv = store.get(key);
-            kv.setTimestamp(r);
-            trigger(new ReadResponseMessage(self,event.getSource(),kv, r), net);
         }
     };
 
@@ -104,10 +126,8 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
     };
 
 
-
-
-    // Algorithm 4.6: 1.5
-    Handler<InitWriteRequest> handleInitWriteRequest = new Handler<InitWriteRequest>() {
+    // Algorithm 4.7: 1.5
+    Handler<InitWriteRequest> initWriteRequestHandler = new Handler<InitWriteRequest>() {
         @Override
         public void handle(InitWriteRequest event) {
             rid++;
@@ -120,9 +140,44 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
         }
     };
 
+    // Algorithm 4.7: 1.6
+    private void handleWriteRequest(TAddress source, WriteRequest request) {
+        KVEntry kv = request.getKVEntry();
+        Integer key = kv.getKey();
+        KVEntry localKv = store.get(key);
+        if(localKv.getTimestamp() < kv.getTimestamp()) {
+            localKv.setValue(kv.getValue());
+            localKv.setTimestamp(kv.getTimestamp());
+            store.put(key,localKv);
+        }
+
+
+        int val = kv.getValue();
+        trigger(new AckWrite(self, source),net);
+    }
+
+    // Algorithm 4.7: 1.7
+    Handler<AckWrite> handleAckWrite = new Handler<AckWrite>() {
+        @Override
+        public void handle(AckWrite event) {
+            acks++;
+
+            //// acks >= N/2
+            if(acks >= 2) {
+
+                acks = 0;
+                if(reading = true) {
+                    reading = false;
+                    trigger();
+                }
 
 
 
+
+            }
+
+        }
+    };
 
 
     private KVEntry getMaxTimestampPair() {
