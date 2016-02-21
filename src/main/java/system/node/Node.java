@@ -7,9 +7,13 @@ import se.sics.kompics.network.Network;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
 import system.KVEntry;
+import system.client.event.PUTRequest;
 import system.coordination.event.InitReadRequest;
+import system.coordination.event.InitWriteRequest;
 import system.coordination.event.ReadReturn;
+import system.coordination.event.WriteReturn;
 import system.coordination.port.RIWMPort;
+import system.data.Bound;
 import system.port.epfd.FDPort;
 import system.epfd.event.Restore;
 import system.epfd.event.Suspect;
@@ -22,22 +26,24 @@ public class Node extends ComponentDefinition {
     private final TAddress self;
     private boolean isLeader;
     private ArrayList<TAddress> replicationGroup;
+    private Bound bounds;
 
     private HashMap<Integer, KVEntry> store;
     private final ArrayList<TAddress> neighbours;
     Positive<Network> net = requires(Network.class);
     Positive<FDPort> epfd = requires(FDPort.class);
     Positive<RIWMPort> riwm = requires(RIWMPort.class);
-    private LinkedList<TAddress> startupAcks;
+
 
 
     public Node(Init init) {
         this.self = init.self;
         this.neighbours = init.neighbours;
         this.store = init.store;
+        System.out.println(store.toString());
         this.replicationGroup = init.replicationGroup;
         this.isLeader = init.isLeader;
-        startupAcks = new LinkedList<>();
+        this.bounds = init.bounds;
 
         subscribe(startHandler, control);
 
@@ -45,8 +51,10 @@ public class Node extends ComponentDefinition {
         subscribe(restoreHandler, epfd);
 
         subscribe(readReturnHandler, riwm);
+        subscribe(writeReturnHandler, riwm);
 
         subscribe(getRequestHandler, net);
+        subscribe(putRequestHandler, net);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
@@ -62,8 +70,7 @@ public class Node extends ComponentDefinition {
     Handler<GETRequest> getRequestHandler = new Handler<GETRequest>() {
         @Override
         public void handle(GETRequest getRequest) {
-            int split = Integer.MAX_VALUE/3;
-            int key = split - 10000;
+            int key = getRequest.getKv().getKey();
             InitReadRequest initReadRequest = new InitReadRequest(key, neighbours);
             trigger(initReadRequest, riwm);
         }
@@ -73,6 +80,22 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(ReadReturn readReturn) {
             System.out.println("I got readreturn yay" + readReturn.getValue());
+        }
+    };
+
+    Handler<PUTRequest> putRequestHandler = new Handler<PUTRequest>() {
+        @Override
+        public void handle(PUTRequest putRequest) {
+            int key = putRequest.getKv().getKey();
+            InitWriteRequest initWriteRequest = new InitWriteRequest(putRequest.getKv());
+            trigger(initWriteRequest, riwm);
+        }
+    };
+
+    Handler<WriteReturn> writeReturnHandler = new Handler<WriteReturn>() {
+        @Override
+        public void handle(WriteReturn writeReturn) {
+            System.out.println("I got writereturn yay");
         }
     };
 
@@ -97,13 +120,15 @@ public class Node extends ComponentDefinition {
         public boolean isLeader;
         public HashMap<Integer, KVEntry> store;
         public ArrayList<TAddress> replicationGroup;
+        public Bound bounds;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, boolean isLeader, Bound bounds) {
             this.self = self;
             this.neighbours = neighbours;
             this.store = store;
             this.replicationGroup = replicationGroup;
             this.isLeader = isLeader;
+            this.bounds = bounds;
         }
     }
 }

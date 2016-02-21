@@ -42,8 +42,6 @@ public class BestEffortBroadcast extends ComponentDefinition {
                 BebDataMessage msg = new BebDataMessage(self,node, event.getDeliverEvent());
                 trigger(msg, net);
             }
-            BebDataMessage msg = new BebDataMessage(self,self, event.getDeliverEvent());
-            trigger(msg, net);
         }
     };
 

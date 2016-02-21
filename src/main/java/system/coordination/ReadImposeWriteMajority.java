@@ -9,10 +9,10 @@ import system.beb.event.BebDeliver;
 import system.KVEntry;
 import system.coordination.event.*;
 import system.coordination.port.RIWMPort;
+import system.data.Bound;
 import system.network.TAddress;
 import system.port.epfd.FDPort;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -21,12 +21,8 @@ import java.util.HashMap;
  */
 public class ReadImposeWriteMajority extends ComponentDefinition {
 
-    private int rid;
-
-    private int readval;
     private Positive<Network> net = requires(Network.class);
     private TAddress self;
-
 
     private HashMap<Integer, KVEntry> store;
     private HashMap<Integer, Integer> readvals = new HashMap<>();
@@ -35,6 +31,7 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
     private HashMap<Integer, Integer> acks = new HashMap<>();
     private HashMap<Integer, Boolean> readings = new HashMap<>();
     private HashMap<Integer, Integer> wts = new HashMap<>();
+    private Bound bounds;
 
     Negative<RIWMPort> riwm = provides(RIWMPort.class);
     private Positive<BestEffortBroadcastPort> beb = requires(BestEffortBroadcastPort.class);
@@ -42,10 +39,10 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
     private ArrayList<TAddress> neighbours;
     // Algorithm 4.6: 1.1
     public ReadImposeWriteMajority(Init init) {
-        this.rid = 0;
-        this.readval = 0;
         self = init.self;
         this.store = init.store;
+        this.bounds = init.bounds;
+
         this.neighbours = init.neighbours;
 
         subscribe(bebDeliverHandler, beb);
@@ -96,11 +93,17 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
     private void handleReadRequest(TAddress source,ReadRequest request) {
         Integer key = request.getKey();
         int r = request.getrId();
-        KVEntry kv = store.get(key);
+        KVEntry kv;
+        if(!store.containsKey(key)) {
+            kv = new KVEntry(key, -1, -1);
+        }
+        else {
+            kv = store.get(key);
+        }
         trigger(new ReadResponseMessage(self,source,kv, r), net);
     }
 
-    // Algorithm 4.6: 1.4
+    // Algorithm 4.6: 1.4 //TODO we receive duplicate read response from one node
     Handler<ReadResponseMessage> readResponseHandler = new Handler<ReadResponseMessage>() {
         @Override
         public void handle(ReadResponseMessage event) {
@@ -108,6 +111,12 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
             int r = event.getrId();
 
             Integer key = event.getKv().getKey();
+            if(event.getKv().getValue() == -1) {
+                System.out.println(event.getSource() + " does not have key: " + key);
+            }
+            if(event.getKv().getValue() != -1) {
+                System.out.println(event.getSource() + " have key: " + key);
+            }
             if(r == rids.get(key)) {
 
                 ArrayList readlist = readlists.get(key);
@@ -137,23 +146,19 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
             if(!rids.containsKey(key)) {
                 rids.put(key, 0);
             }
-
             // r++;
             rids.put(key, rids.get(key)+1);
-
 
             if(!wts.containsKey(key)) {
                 wts.put(key, 0);
             }
             wts.put(key, wts.get(key) + 1);
-
             acks.put(key, 0);
-
             KVEntry entry = event.getKVEntry();
             entry.setTimestamp(wts.get(key));
 
             trigger(new BebBroadcastRequest(
-                    new BebDeliver(self,new WriteRequest(entry, rids.get(key))),
+                    new BebDeliver(self, new WriteRequest(entry, rids.get(key))),
                     neighbours),beb);
         }
     };
@@ -162,14 +167,17 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
     private void handleWriteRequest(TAddress source, WriteRequest request) {
         KVEntry kv = request.getKVEntry();
         Integer key = kv.getKey();
-        KVEntry localKv = store.get(key);
-        if(localKv.getTimestamp() < kv.getTimestamp()) {
-            localKv.setValue(kv.getValue());
-            localKv.setTimestamp(kv.getTimestamp());
-            store.put(key,localKv);
+        if(withinBounds(key)) { //if we have the key
+            KVEntry localKv = new KVEntry(0,0,0);
+            if (localKv.getTimestamp() < kv.getTimestamp()) {
+                localKv.setKey(key);
+                localKv.setValue(kv.getValue());
+                localKv.setTimestamp(kv.getTimestamp());
+                store.put(key, localKv);
+                System.out.println(self + " Wrote key " + localKv.getKey() + " value " + localKv.getValue());
+            }
+            trigger(new AckWrite(self, source, key, request.getRid()), net);
         }
-
-        trigger(new AckWrite(self, source, key, request.getRid()),net);
     }
 
     // Algorithm 4.7: 1.7
@@ -182,7 +190,6 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
                 //// acks >= N/2, in our case we have 3 replicas in each partition that makes 2 a majority
                 if (acks.get(key) >= 2) {
                     acks.put(key, 0);
-
                     if(readings.get(key) == null) {
                         readings.put(key, false);
                     }
@@ -190,6 +197,7 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
                         readings.put(key , false);
                         trigger(new ReadReturn(event.getKey(), readvals.get(event.getKey())), riwm);
                     } else {
+                        System.out.println("RIWM finished writing");
                         trigger(new WriteReturn(), riwm);
                     }
                 }
@@ -209,19 +217,23 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
         return max;
     }
 
-
-
-
     public static class Init extends se.sics.kompics.Init<ReadImposeWriteMajority> {
         public final TAddress self;
         public final HashMap<Integer, KVEntry> store;
         private ArrayList <TAddress> neighbours;
-
-        public Init(TAddress self, HashMap <Integer, KVEntry> store, ArrayList <TAddress> neighbours) {
+        public Bound bounds;
+        public Init(TAddress self, HashMap <Integer, KVEntry> store, ArrayList <TAddress> neighbours, Bound bounds) {
             this.self = self;
             this.store = store;
             this.neighbours = neighbours;
+            this.bounds = bounds;
         }
     }
 
+    private boolean withinBounds(Integer key) {
+        if(key > bounds.getLowerBound() && key < bounds.getUpperBound()) {
+            return true;
+        }
+        return false;
+    }
 }

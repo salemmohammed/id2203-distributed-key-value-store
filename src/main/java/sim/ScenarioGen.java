@@ -5,6 +5,10 @@ import se.sics.kompics.simulator.events.system.KillNodeEvent;
 import sim.preload.DatastoreFactory;
 import system.KVEntry;
 import system.client.ClientParent;
+import system.client.event.GETRequest;
+import system.client.event.PUTRequest;
+import system.data.Bound;
+import system.network.TMessage;
 import system.node.NodeParent;
 import system.network.TAddress;
 
@@ -34,6 +38,7 @@ public class ScenarioGen {
                 HashMap <Integer, KVEntry> store = new HashMap<>();
                 ArrayList<TAddress> replicationGroup;
                 boolean isLeader;
+                Bound bound;
                 {
                     try {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
@@ -41,6 +46,7 @@ public class ScenarioGen {
                         replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
                         neighbours = datastoreFactory.getNeighbours();
                         isLeader = false;
+                        bound = datastoreFactory.getBoundsByIpSuffix(self);
                         if(self == 4) {
                             isLeader = true;
                         }
@@ -62,7 +68,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, neighbours, store, replicationGroup, isLeader);
+                    return new NodeParent.Init(selfAdr, neighbours, store, replicationGroup, isLeader, bound);
                 }
             };
         }
@@ -74,6 +80,7 @@ public class ScenarioGen {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
+                TMessage command;
 
                 {
                     try {
@@ -82,6 +89,48 @@ public class ScenarioGen {
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
+                        this.nodes = nodes;
+                        KVEntry kv = new KVEntry(5,-1,0);
+                        this.command = new GETRequest(selfAdr, nodes.get(0), kv);
+                    } catch (UnknownHostException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                @Override
+                public Address getNodeAddress() {
+                    return selfAdr;
+                }
+
+                @Override
+                public Class<? extends ComponentDefinition> getComponentDefinition() {
+                    return ClientParent.class;
+                }
+
+                @Override
+                public Init getComponentInit() {
+                    return new ClientParent.Init(selfAdr, nodes, command);
+                }
+            };
+        }
+    };
+
+    static Operation startPUTClient = new Operation<StartNodeEvent>() {
+        @Override
+        public StartNodeEvent generate() {
+            return new StartNodeEvent() {
+                TAddress selfAdr;
+                ArrayList<TAddress> nodes;
+                TMessage command;
+
+                {
+                    try {
+                        //Client is started on ip ending with 100
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + 100), 10000);
+                        //Nodes to send GETRequest to
+                        ArrayList<TAddress> nodes = new ArrayList<>();
+                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
+                        KVEntry kv = new KVEntry(7,5235,0);
+                        this.command = new PUTRequest(selfAdr, nodes.get(0), kv);
                         this.nodes = nodes;
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
@@ -99,7 +148,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new ClientParent.Init(selfAdr, nodes);
+                    return new ClientParent.Init(selfAdr, nodes, command);
                 }
             };
         }
@@ -130,7 +179,7 @@ public class ScenarioGen {
 
 
     public static SimulationScenario testGETOperation() {
-        SimulationScenario failureDetectionScenario = new SimulationScenario() {
+        SimulationScenario getOperationScenario = new SimulationScenario() {
             {
                 //Start three nodes holding even values
                 StochasticProcess nodeGroupProcess = new StochasticProcess() {
@@ -155,7 +204,36 @@ public class ScenarioGen {
             }
         };
 
-        return failureDetectionScenario;
+        return getOperationScenario;
+    }
+
+    public static SimulationScenario testPUTOperation() {
+        SimulationScenario putOperationScenario = new SimulationScenario() {
+            {
+                //Start three nodes holding even values
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                //Start client that gets a value
+                StochasticProcess putClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(1, startPUTClient);
+                    }
+                };
+
+                nodeGroupProcess.start();
+                putClient.start();
+
+                terminateAfterTerminationOf(1000, putClient);
+            }
+        };
+
+        return putOperationScenario;
     }
 
     public static SimulationScenario testFailureDetection() {

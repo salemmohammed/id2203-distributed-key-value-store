@@ -8,22 +8,22 @@ import system.network.TMessage;
 /**
  * Created by Robin on 2016-02-13.
  */
-public class GETReply extends TMessage {
+public class PUTReply extends TMessage {
 
     private Integer key;
     private Integer value;
 
 
-    public GETReply(TAddress src, TAddress dst, Integer key, Integer value) {
+    public PUTReply(TAddress src, TAddress dst, Integer key, Integer value) {
         super(src, dst, Transport.TCP);
         this.key = key;
         this.value = value;
     }
 
-    public GETReply(THeader header) {
+    public PUTReply(THeader header) {
         super(header);
     }
-public Integer getKeyValue() {
+    public Integer getKeyValue() {
         return value;
     }
     public Integer getKey() {

@@ -11,6 +11,7 @@ import system.beb.BestEffortBroadcastPort;
 import system.KVEntry;
 import system.coordination.ReadImposeWriteMajority;
 import system.coordination.port.RIWMPort;
+import system.data.Bound;
 import system.epfd.EventuallyPerfectFailureDetector;
 import system.port.epfd.FDPort;
 import system.network.TAddress;
@@ -24,7 +25,7 @@ public class NodeParent extends ComponentDefinition {
     Positive<Timer> timer = requires(Timer.class);
 
     public NodeParent(Init init) {
-        Component node = create(Node.class, new Node.Init(init.self, init.neighbours, init.store, init.replicationGroup, init.isLeader));
+        Component node = create(Node.class, new Node.Init(init.self, init.neighbours, init.store, init.replicationGroup, init.isLeader, init.bounds));
         connect(node.getNegative(Network.class), network, Channel.TWO_WAY);
 
         Component epfd = create(EventuallyPerfectFailureDetector.class, new EventuallyPerfectFailureDetector.Init(init.self, init.neighbours));
@@ -32,7 +33,7 @@ public class NodeParent extends ComponentDefinition {
         connect(node.getNegative(FDPort.class), epfd.getPositive(FDPort.class), Channel.TWO_WAY);
         connect(epfd.getNegative(Timer.class), timer, Channel.TWO_WAY);
 
-        Component riwm = create(ReadImposeWriteMajority.class, new ReadImposeWriteMajority.Init(init.self ,init.store, init.neighbours));
+        Component riwm = create(ReadImposeWriteMajority.class, new ReadImposeWriteMajority.Init(init.self ,init.store, init.neighbours, init.bounds));
         connect(node.getNegative(RIWMPort.class), riwm.getPositive(RIWMPort.class), Channel.TWO_WAY);
         connect(riwm.getNegative(Network.class),network, Channel.TWO_WAY);
 
@@ -48,13 +49,15 @@ public class NodeParent extends ComponentDefinition {
         public HashMap <Integer, KVEntry> store;
         ArrayList<TAddress> replicationGroup;
         public boolean isLeader;
+        public Bound bounds;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, boolean isLeader) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, boolean isLeader, Bound bounds) {
             this.self = self;
             this.neighbours = neighbours;
             this.store = store;
             this.replicationGroup = replicationGroup;
             this.isLeader = isLeader;
+            this.bounds = bounds;
         }
     }
 }

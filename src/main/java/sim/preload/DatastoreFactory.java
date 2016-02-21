@@ -1,6 +1,7 @@
 package sim.preload;
 
 import system.KVEntry;
+import system.data.Bound;
 import system.network.TAddress;
 
 import java.net.InetAddress;
@@ -27,11 +28,20 @@ public class DatastoreFactory {
 
     static ArrayList<TAddress> neighbours = new ArrayList<>();
 
+    static Bound[] bounds = new Bound[3];
+
     {
-        int split = Integer.MAX_VALUE/3;
-        store1.put(split - 10000,new KVEntry(split - 100000,3532, 0));
-        store2.put(2*split - 14234,new KVEntry(2*split - 14234, 323, 0));
-        store3.put(3*split - 13224,new KVEntry(3*split - 13224, 5644, 0));
+        Bound bound1 = new Bound(0,9);
+        Bound bound2 = new Bound(10,19);
+        Bound bound3 = new Bound(20,29);
+
+        bounds[0] = bound1;
+        bounds[1] = bound2;
+        bounds[2] = bound3;
+
+        store1.put(5,new KVEntry(5,3532, 0));
+        store2.put(15,new KVEntry(15, 323, 0));
+        store3.put(25,new KVEntry(25, 5644, 0));
         stores[0] = store1;
         stores[1] = store2;
         stores[2] = store3;
@@ -99,5 +109,17 @@ public class DatastoreFactory {
         return 500;
     }
 
+    public static Bound getBoundsByIpSuffix(int suffix) {
 
+        if(suffix <= 3) {
+            return bounds[0];
+        }
+        if(suffix > 3 && suffix <= 6) {
+            return bounds[1];
+        }
+        if(suffix > 6 && suffix <= 9) {
+            return bounds[2];
+        }
+        return null;
+    }
 }

@@ -7,6 +7,7 @@ import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 import system.network.TAddress;
+import system.network.TMessage;
 
 import java.util.ArrayList;
 
@@ -19,18 +20,20 @@ public class ClientParent extends ComponentDefinition {
     Positive<Timer> timer = requires(Timer.class);
 
     public ClientParent(Init init) {
-        Component client = create(Client.class, new Client.Init(init.self, init.nodes));
+        Component client = create(Client.class, new Client.Init(init.self, init.nodes, init.command));
         connect(client.getNegative(Network.class), network, Channel.TWO_WAY);
     }
 
     public static class Init extends se.sics.kompics.Init<ClientParent> {
 
-        public final TAddress self;
-        ArrayList<TAddress> nodes;
+        private final TAddress self;
+        private ArrayList<TAddress> nodes;
+        private TMessage command;
 
-        public Init(TAddress self, ArrayList<TAddress> nodes) {
+        public Init(TAddress self, ArrayList<TAddress> nodes, TMessage command) {
             this.self = self;
             this.nodes = nodes;
+            this.command = command;
         }
     }
 }

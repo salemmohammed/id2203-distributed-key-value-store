@@ -12,6 +12,7 @@ public class KVEntry implements Serializable {
     private int timestamp;
 
     public KVEntry(int key, int value, int timestamp) {
+        this.key = key;
         this.timestamp = timestamp;
         this.value = value;
 
@@ -39,5 +40,9 @@ public class KVEntry implements Serializable {
 
     public void setValue(int value) {
         this.value = value;
+    }
+
+    public String toString() {
+        return "Key: " +key + " Value: " + value + " Timestamp: " +timestamp;
     }
 }
