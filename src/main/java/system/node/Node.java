@@ -79,7 +79,6 @@ public class Node extends ComponentDefinition {
     Handler<ReadReturn> readReturnHandler = new Handler<ReadReturn>() {
         @Override
         public void handle(ReadReturn readReturn) {
-            System.out.println("I got readreturn yay" + readReturn.getValue());
         }
     };
 
@@ -95,7 +94,6 @@ public class Node extends ComponentDefinition {
     Handler<WriteReturn> writeReturnHandler = new Handler<WriteReturn>() {
         @Override
         public void handle(WriteReturn writeReturn) {
-            System.out.println("I got writereturn yay");
         }
     };
 

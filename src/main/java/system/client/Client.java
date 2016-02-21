@@ -32,6 +32,7 @@ public class Client extends ComponentDefinition {
 
         subscribe(startHandler, control);
         subscribe(getReplyHandler, net);
+        subscribe(putReplyHandler, net);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {

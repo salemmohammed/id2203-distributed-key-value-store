@@ -23,13 +23,13 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class ScenarioGen {
 
     static DatastoreFactory datastoreFactory = new DatastoreFactory();
 
     static Operation1 nodeGroup = new Operation1<StartNodeEvent, Integer>() {
-
         @Override
         public StartNodeEvent generate(final Integer self) {
             return new StartNodeEvent() {
@@ -81,7 +81,6 @@ public class ScenarioGen {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
                 TMessage command;
-
                 {
                     try {
                         //Client is started on ip ending with 100
@@ -114,14 +113,13 @@ public class ScenarioGen {
         }
     };
 
-    static Operation startPUTClient = new Operation<StartNodeEvent>() {
+    static Operation1 startPUTClient = new Operation1<StartNodeEvent, Integer>() {
         @Override
-        public StartNodeEvent generate() {
+        public StartNodeEvent generate(final Integer val) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
                 TMessage command;
-
                 {
                     try {
                         //Client is started on ip ending with 100
@@ -129,7 +127,7 @@ public class ScenarioGen {
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
-                        KVEntry kv = new KVEntry(7,5235,0);
+                        KVEntry kv = new KVEntry(5,val,0);
                         this.command = new PUTRequest(selfAdr, nodes.get(0), kv);
                         this.nodes = nodes;
                     } catch (UnknownHostException ex) {
@@ -219,17 +217,24 @@ public class ScenarioGen {
                 };
 
                 //Start client that gets a value
-                StochasticProcess putClient = new StochasticProcess() {
+                StochasticProcess getClient = new StochasticProcess() {
                     {
-                        eventInterArrivalTime(constant(0));
-                        raise(1, startPUTClient);
+                        eventInterArrivalTime(constant(30));
+                        raise(1, startGETClient);
                     }
                 };
 
+                //Start client that gets a value
+                StochasticProcess putClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1));
+                    }
+                };
                 nodeGroupProcess.start();
                 putClient.start();
-
-                terminateAfterTerminationOf(1000, putClient);
+                getClient.start();
+                terminateAfterTerminationOf(1000, getClient);
             }
         };
 

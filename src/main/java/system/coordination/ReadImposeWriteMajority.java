@@ -1,5 +1,7 @@
 package system.coordination;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.network.Transport;
@@ -23,6 +25,8 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
 
     private Positive<Network> net = requires(Network.class);
     private TAddress self;
+
+    private static final Logger LOG = LoggerFactory.getLogger(ReadImposeWriteMajority.class);
 
     private HashMap<Integer, KVEntry> store;
     private HashMap<Integer, Integer> readvals = new HashMap<>();
@@ -71,6 +75,7 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
     Handler<InitReadRequest> initReadHandler = new Handler<InitReadRequest>() {
         @Override
         public void handle(InitReadRequest event) {
+            LOG.info(self + " Starting read at time " + System.currentTimeMillis() + " Key-" + event.getKey());
             Integer key = event.getKey();
             if(!rids.containsKey(key)) {
                 rids.put(key, 0);
@@ -107,27 +112,15 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
     Handler<ReadResponseMessage> readResponseHandler = new Handler<ReadResponseMessage>() {
         @Override
         public void handle(ReadResponseMessage event) {
-
             int r = event.getrId();
-
             Integer key = event.getKv().getKey();
-            if(event.getKv().getValue() == -1) {
-                System.out.println(event.getSource() + " does not have key: " + key);
-            }
-            if(event.getKv().getValue() != -1) {
-                System.out.println(event.getSource() + " have key: " + key);
-            }
             if(r == rids.get(key)) {
-
                 ArrayList readlist = readlists.get(key);
                 readlist.add(event.getKv());
-
                 if(readlist.size() >= 2) {
                     KVEntry maxPair = getMaxTimestampPair(key);
                     readlists.put(key, new ArrayList<>());
-
                     readvals.put(maxPair.getKey(), maxPair.getValue());
-
                     trigger(new BebBroadcastRequest(
                             new BebDeliver(self,new WriteRequest(maxPair, rids.get(key))),
                             neighbours),beb);
@@ -141,6 +134,7 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
     Handler<InitWriteRequest> initWriteRequestHandler = new Handler<InitWriteRequest>() {
         @Override
         public void handle(InitWriteRequest event) {
+            LOG.info(self + " Starting write at time " + System.currentTimeMillis() + " Key-" + event.getKVEntry().getKey() + " Val-"+ event.getKVEntry().getValue());
             KVEntry kv = event.getKVEntry();
             Integer key = kv.getKey();
             if(!rids.containsKey(key)) {
@@ -174,7 +168,6 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
                 localKv.setValue(kv.getValue());
                 localKv.setTimestamp(kv.getTimestamp());
                 store.put(key, localKv);
-                System.out.println(self + " Wrote key " + localKv.getKey() + " value " + localKv.getValue());
             }
             trigger(new AckWrite(self, source, key, request.getRid()), net);
         }
@@ -186,19 +179,20 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
         public void handle(AckWrite event) {
             Integer key = event.getKey();
             if(event.getRid() == rids.get(key)) {
+                LOG.info("got new ack from " + event.getSource());
                 acks.put(key, acks.get(key) + 1);
-                //// acks >= N/2, in our case we have 3 replicas in each partition that makes 2 a majority
                 if (acks.get(key) >= 2) {
                     acks.put(key, 0);
                     if(readings.get(key) == null) {
                         readings.put(key, false);
                     }
-                    if (readings.get(key) == true) {
+                    if (readings.get(key) == true) { //TODO found bug, if someone does a get and then a put operation for the same key then the last ack from the ack will count in on the put operation
                         readings.put(key , false);
                         trigger(new ReadReturn(event.getKey(), readvals.get(event.getKey())), riwm);
+                        LOG.info(self + " Ending read at time " + System.currentTimeMillis() + " Key-" + event.getKey() + " Val-"+ readvals.get(event.getKey()));
                     } else {
-                        System.out.println("RIWM finished writing");
-                        trigger(new WriteReturn(), riwm);
+                        trigger(new WriteReturn(event.getKey(), store.get(event.getKey()).getValue()), riwm);
+                        LOG.info(self + " Ending write at time " + System.currentTimeMillis() + " Key-" + event.getKey() + " Val-"+ store.get(event.getKey()).getValue());
                     }
                 }
             }
