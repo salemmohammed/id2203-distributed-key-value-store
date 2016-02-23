@@ -1,9 +1,6 @@
-package system.coordination.event;
+package system.coordination.riwm.event;
 
 import se.sics.kompics.KompicsEvent;
-import system.network.TAddress;
-
-import java.util.ArrayList;
 
 /**
  * Created by marcus on 17/02/16.

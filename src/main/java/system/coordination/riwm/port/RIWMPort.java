@@ -1,7 +1,7 @@
-package system.coordination.port;
+package system.coordination.riwm.port;
 
 import se.sics.kompics.PortType;
-import system.coordination.event.*;
+import system.coordination.riwm.event.*;
 
 /**
  * Created by marcus on 17/02/16.

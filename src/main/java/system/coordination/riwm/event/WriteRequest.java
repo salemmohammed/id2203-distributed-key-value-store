@@ -1,10 +1,7 @@
-package system.coordination.event;
+package system.coordination.riwm.event;
 
 import se.sics.kompics.KompicsEvent;
-import se.sics.kompics.network.Transport;
 import system.KVEntry;
-import system.network.TAddress;
-import system.network.TMessage;
 
 /**
  * Created by marcus on 17/02/16.
