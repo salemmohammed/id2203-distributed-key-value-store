@@ -186,7 +186,7 @@ public class ReadImposeWriteMajority extends ComponentDefinition {
                     if(readings.get(key) == null) {
                         readings.put(key, false);
                     }
-                    if (readings.get(key) == true) { //TODO found bug, if someone does a get and then a put operation for the same key then the last ack from the ack will count in on the put operation
+                    if (readings.get(key) == true) { //TODO found bug, if someone does a get and then a subsequent put operation for the same key then the last ack from the read will count in on the put operation
                         readings.put(key , false);
                         trigger(new ReadReturn(event.getKey(), readvals.get(event.getKey())), riwm);
                         LOG.info(self + " Ending read at time " + System.currentTimeMillis() + " Key-" + event.getKey() + " Val-"+ readvals.get(event.getKey()));
