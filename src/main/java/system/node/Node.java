@@ -7,6 +7,9 @@ import se.sics.kompics.network.Network;
 import system.client.event.GETRequest;
 import system.KVEntry;
 import system.client.event.PUTRequest;
+import system.coordination.paxos.event.AscDecide;
+import system.coordination.paxos.event.AscPropose;
+import system.coordination.paxos.port.AbortableSequenceConsensusPort;
 import system.coordination.riwm.event.InitReadRequest;
 import system.coordination.riwm.event.InitWriteRequest;
 import system.coordination.riwm.event.ReadReturn;
@@ -32,6 +35,7 @@ public class Node extends ComponentDefinition {
     Positive<Network> net = requires(Network.class);
     Positive<FDPort> epfd = requires(FDPort.class);
     Positive<RIWMPort> riwm = requires(RIWMPort.class);
+    Positive<AbortableSequenceConsensusPort> asc = requires(AbortableSequenceConsensusPort.class);
 
 
 
@@ -54,6 +58,9 @@ public class Node extends ComponentDefinition {
 
         subscribe(getRequestHandler, net);
         subscribe(putRequestHandler, net);
+
+        subscribe(ascProposeHandler, net);
+        subscribe(ascDecideHandler, net);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
@@ -87,6 +94,18 @@ public class Node extends ComponentDefinition {
             int key = putRequest.getKv().getKey();
             InitWriteRequest initWriteRequest = new InitWriteRequest(putRequest.getKv());
             trigger(initWriteRequest, riwm);
+        }
+    };
+
+    Handler<AscPropose> ascProposeHandler = new Handler<AscPropose>() {
+        @Override
+        public void handle(AscPropose ascPropose) {
+        }
+    };
+
+    Handler<AscDecide> ascDecideHandler = new Handler<AscDecide>() {
+        @Override
+        public void handle(AscDecide writeReturn) {
         }
     };
 
