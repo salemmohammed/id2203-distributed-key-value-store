@@ -1,4 +1,4 @@
-package system.coordination.event;
+package system.coordination.riwm.event;
 
 import se.sics.kompics.network.Transport;
 import system.network.TAddress;

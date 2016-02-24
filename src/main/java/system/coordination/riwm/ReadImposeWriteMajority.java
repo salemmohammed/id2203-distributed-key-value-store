@@ -1,19 +1,17 @@
-package system.coordination;
+package system.coordination.riwm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
-import se.sics.kompics.network.Transport;
 import system.beb.BestEffortBroadcastPort;
 import system.beb.event.BebBroadcastRequest;
 import system.beb.event.BebDeliver;
 import system.KVEntry;
-import system.coordination.event.*;
-import system.coordination.port.RIWMPort;
+import system.coordination.riwm.event.*;
+import system.coordination.riwm.port.RIWMPort;
 import system.data.Bound;
 import system.network.TAddress;
-import system.port.epfd.FDPort;
 
 import java.util.ArrayList;
 import java.util.HashMap;
