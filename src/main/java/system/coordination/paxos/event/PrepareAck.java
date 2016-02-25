@@ -4,43 +4,65 @@ import se.sics.kompics.network.Transport;
 import system.network.TAddress;
 import system.network.TMessage;
 
+import java.util.List;
+
 /**
  * Created by marcus on 23/02/16.
  */
 public class PrepareAck extends TMessage {
 
-    private int n;
-    private int na;
-    private TMessage va;
+    private int ts;
+    private int ats;
+    private List<Object> vsuf;
+    private int al;
+    private int t;
 
-    public PrepareAck(TAddress source, TAddress destination, int n, int na, TMessage va) {
+    public PrepareAck(TAddress source, TAddress destination, int ts, int ats, List<Object> vsuf, int al, int t) {
         super(source, destination, Transport.TCP);
-        this.n = n;
-        this.na = na;
-        this.va = va;
+        this.setTs(ts);
+        this.setAts(ats);
+        this.setVsuf(vsuf);
+        this.setAl(al);
+        this.setT(t);
     }
 
-    public int getN() {
-        return n;
+    public int getTs() {
+        return ts;
     }
 
-    public void setN(int n) {
-        this.n = n;
+    public void setTs(int ts) {
+        this.ts = ts;
     }
 
-    public int getNa() {
-        return na;
+    public int getAts() {
+        return ats;
     }
 
-    public void setNa(int na) {
-        this.na = na;
+    public void setAts(int ats) {
+        this.ats = ats;
     }
 
-    public TMessage getVa() {
-        return va;
+    public List<Object> getVsuf() {
+        return vsuf;
     }
 
-    public void setVa(TMessage va) {
-        this.va = va;
+    public void setVsuf(List<Object> vsuf) {
+        this.vsuf = vsuf;
+    }
+
+    public int getAl() {
+        return al;
+    }
+
+    public void setAl(int al) {
+        this.al = al;
+    }
+
+    public int getT() {
+        return t;
+    }
+
+    public void setT(int t) {
+        this.t = t;
     }
 }

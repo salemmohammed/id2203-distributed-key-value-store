@@ -5,5 +5,5 @@ import se.sics.kompics.KompicsEvent;
 /**
  * Created by Robin on 2016-02-24.
  */
-public class Abort implements KompicsEvent {
+public class AscAbort implements KompicsEvent {
 }

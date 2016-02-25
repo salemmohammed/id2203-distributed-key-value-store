@@ -1,7 +1,7 @@
 package system.coordination.paxos.port;
 
 import se.sics.kompics.PortType;
-import system.coordination.paxos.event.Abort;
+import system.coordination.paxos.event.AscAbort;
 import system.coordination.paxos.event.AscDecide;
 import system.coordination.paxos.event.AscPropose;
 
@@ -12,6 +12,6 @@ public class AbortableSequenceConsensusPort extends PortType {
     {
         request(AscPropose.class);
         indication(AscDecide.class);
-        indication(Abort.class);
+        indication(AscAbort.class);
     }
 }

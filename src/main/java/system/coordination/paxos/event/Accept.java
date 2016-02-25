@@ -10,29 +10,49 @@ import java.util.ArrayList;
  * Created by marcus on 23/02/16.
  */
 public class Accept extends TMessage {
-    private int nc;
-    private ArrayList<TMessage> vc;
+    private int ts;
+    private ArrayList<Object> vsuf;
+    private int offs;
+    private int t;
 
-    public Accept(TAddress source, TAddress destination, int nc, ArrayList<TMessage> vc) {
-
+    public Accept(TAddress source, TAddress destination, int ts, ArrayList<Object> vsuf, int offs, int t) {
         super(source, destination, Transport.TCP);
-        this.nc = nc;
-        this.vc = vc;
+        this.ts = ts;
+        this.vsuf = vsuf;
+        this.offs = offs;
+        this.t = t;
+
     }
 
-    public int getNc() {
-        return nc;
+    public int getTs() {
+        return ts;
     }
 
-    public void setNc(int nc) {
-        this.nc = nc;
+    public void setTs(int ts) {
+        this.ts = ts;
     }
 
-    public ArrayList<TMessage> getVc() {
-        return vc;
+    public ArrayList<Object> getVsuf() {
+        return vsuf;
     }
 
-    public void setVc(ArrayList<TMessage> vc) {
-        this.vc = vc;
+    public void setVsuf(ArrayList<Object> vsuf) {
+        this.vsuf = vsuf;
+    }
+
+    public int getOffs() {
+        return offs;
+    }
+
+    public void setOffs(int offs) {
+        this.offs = offs;
+    }
+
+    public int getT() {
+        return t;
+    }
+
+    public void setT(int t) {
+        this.t = t;
     }
 }

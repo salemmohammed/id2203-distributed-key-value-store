@@ -8,7 +8,40 @@ import system.network.TMessage;
  * Created by Robin on 2016-02-24.
  */
 public class Decide extends TMessage {
-    public Decide(TAddress source, TAddress destination) {
-        super(source, destination, Transport.TCP);
+
+        private int pts;
+        private int pl;
+        private int t;
+
+    public Decide(TAddress source, TAddress destination, int pts, int pl, int t) {
+            super(source, destination, Transport.TCP);
+            this.setPts(pts);
+            this.setPl(pl);
+            this.setT(t);
+        }
+
+    public int getPts() {
+        return pts;
+    }
+
+    public void setPts(int pts) {
+        this.pts = pts;
+    }
+
+    public int getPl() {
+        return pl;
+    }
+
+    public void setPl(int pl) {
+        this.pl = pl;
+    }
+
+    public int getT() {
+        return t;
+    }
+
+    public void setT(int t) {
+        this.t = t;
     }
 }
+
