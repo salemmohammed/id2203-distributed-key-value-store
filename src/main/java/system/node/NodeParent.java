@@ -9,6 +9,8 @@ import se.sics.kompics.timer.Timer;
 import system.beb.BestEffortBroadcast;
 import system.beb.BestEffortBroadcastPort;
 import system.KVEntry;
+import system.coordination.paxos.AbortableSequenceConsensus;
+import system.coordination.paxos.port.AbortableSequenceConsensusPort;
 import system.coordination.riwm.ReadImposeWriteMajority;
 import system.coordination.riwm.port.RIWMPort;
 import system.data.Bound;
@@ -33,13 +35,13 @@ public class NodeParent extends ComponentDefinition {
         connect(node.getNegative(FDPort.class), epfd.getPositive(FDPort.class), Channel.TWO_WAY);
         connect(epfd.getNegative(Timer.class), timer, Channel.TWO_WAY);
 
-        Component riwm = create(ReadImposeWriteMajority.class, new ReadImposeWriteMajority.Init(init.self ,init.store, init.neighbours, init.bounds));
-        connect(node.getNegative(RIWMPort.class), riwm.getPositive(RIWMPort.class), Channel.TWO_WAY);
-        connect(riwm.getNegative(Network.class),network, Channel.TWO_WAY);
-
         Component beb = create(BestEffortBroadcast.class, new BestEffortBroadcast.Init(init.self));
         connect(beb.getNegative(Network.class),network, Channel.TWO_WAY);
-        connect(riwm.getNegative(BestEffortBroadcastPort.class), beb.getPositive(BestEffortBroadcastPort.class), Channel.TWO_WAY);
+
+        Component asc = create(AbortableSequenceConsensus.class, new AbortableSequenceConsensus.Init(init.self, init.replicationGroup));
+        connect(node.getNegative(AbortableSequenceConsensusPort.class), asc.getPositive(AbortableSequenceConsensusPort.class), Channel.TWO_WAY);
+        connect(asc.getNegative(Network.class), network, Channel.TWO_WAY);
+
     }
 
     public static class Init extends se.sics.kompics.Init<NodeParent> {

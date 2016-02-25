@@ -11,6 +11,7 @@ import system.coordination.paxos.port.AbortableSequenceConsensusPort;
 import system.network.TAddress;
 import system.network.TMessage;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,23 +38,25 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     private Integer counter;
     private ArrayList<Object> vsufPrime;
 
-    private ArrayList<TAddress> topology;
+    private ArrayList<TAddress> replicationGroup;
     private TAddress self;
 
     Negative<AbortableSequenceConsensusPort> asc = provides(AbortableSequenceConsensusPort.class);
     Positive<Network> net = requires(Network.class);
 
     public AbortableSequenceConsensus(Init init) {
-
-
+        this.self = init.self;
+        this.replicationGroup = init.replicationGroup;
+        proposedValues = new ArrayList<>();
         readlist = new HashMap<TAddress, ReadItem>();
         accepted = new HashMap<>();
         decided = new HashMap<>();
-
+        av = new ArrayList<Object>();
+        pv = new ArrayList<Object>();
 
         subscribe(proposeHandler, asc);
         subscribe(prepareHandler, net);
-        subscribe(nackHandler, asc);
+        subscribe(nackHandler, net);
         subscribe(prepareAckHandler, net);
         subscribe(acceptHandler, net);
         subscribe(acceptAckHandler, net);
@@ -74,16 +77,16 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                 readlist.clear();
                 accepted = new HashMap<>();
                 decided = new HashMap<>();
-                for(TAddress address : topology) {
+                for(TAddress address : replicationGroup) {
                     trigger(new Prepare(self, address, pts, al, t), net);
                 }
             }
-            else if(readlist.size() <= topology.size()/2) {
+            else if(readlist.size() <= replicationGroup.size()/2) {
                 proposedValues.add(proposal);
             }
             else if(!pv.contains(proposal)) {
                 pv.add(proposal);
-                for (TAddress p : topology){
+                for (TAddress p : replicationGroup){
                     if (readlist.containsKey(p)){
                         ArrayList<Object> temp = new ArrayList<Object>();
                         temp.add(proposal);
@@ -135,7 +138,6 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     };
 
 
-
     Handler<PrepareAck> prepareAckHandler = new Handler<PrepareAck>() {
         @Override
         public void handle(PrepareAck event) {
@@ -144,7 +146,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
             if(event.getTs() == pts) {
                 readlist.put(event.getSource(), new ReadItem(event.getAts(), vsuf));
                 decided.put(event.getSource(), event.getAl());
-                if (readlist.size() == (topology.size() / 2 + 1)) {
+                if (readlist.size() == (replicationGroup.size() / 2 + 1)) {
                     tsPrime = new Integer(0);
                     vsufPrime = new ArrayList<>();
 
@@ -165,14 +167,14 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                         }
                     }
 
-                    for (TAddress node : topology) {
+                    for (TAddress node : replicationGroup) {
                         if (readlist.get(node) != null) {
                             Integer lPrime = new Integer(decided.get(node));
                             trigger(new Accept(self, node, pts, suffix(pv, lPrime), lPrime, t), net);
                         }
                     }
                 }
-                else if(readlist.size() > (topology.size()/2 + 1)) {
+                else if(readlist.size() > (replicationGroup.size()/2 + 1)) {
                     trigger(new Accept(self, event.getSource(), pts, suffix(pv, event.getAl()), event.getAl(), t), net);
                     if(pl != 0) {
                         trigger(new Decide(self, event.getSource(), pts, pl, t), net);
@@ -218,9 +220,9 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                         }
                     }
                 });
-                if((pl < event.getL()) && counter > (topology.size()/2)) {
+                if((pl < event.getL()) && counter > (replicationGroup.size()/2)) {
                     pl = new Integer(event.getL());
-                    for(TAddress node : topology) {
+                    for(TAddress node : replicationGroup) {
                         if ((readlist.get(node) != null)) {
                             trigger(new Decide(self, node, pts, pl, t), net);
 
@@ -257,6 +259,12 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
 
 
     public static class Init extends se.sics.kompics.Init<AbortableSequenceConsensus> {
-    }
+        private TAddress self;
+        private ArrayList<TAddress> replicationGroup;
 
+        public Init(TAddress self, ArrayList<TAddress> replicationGroup) {
+            this.self = self;
+            this.replicationGroup = replicationGroup;
+        }
+    }
 }

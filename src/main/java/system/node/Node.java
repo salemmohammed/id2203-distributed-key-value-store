@@ -34,8 +34,10 @@ public class Node extends ComponentDefinition {
     private final ArrayList<TAddress> neighbours;
     Positive<Network> net = requires(Network.class);
     Positive<FDPort> epfd = requires(FDPort.class);
-    Positive<RIWMPort> riwm = requires(RIWMPort.class);
     Positive<AbortableSequenceConsensusPort> asc = requires(AbortableSequenceConsensusPort.class);
+
+    private int seqNum = 0;
+
 
 
 
@@ -53,14 +55,10 @@ public class Node extends ComponentDefinition {
         subscribe(suspectHandler, epfd);
         subscribe(restoreHandler, epfd);
 
-        subscribe(readReturnHandler, riwm);
-        subscribe(writeReturnHandler, riwm);
-
         subscribe(getRequestHandler, net);
         subscribe(putRequestHandler, net);
 
-        subscribe(ascProposeHandler, net);
-        subscribe(ascDecideHandler, net);
+        subscribe(ascDecideHandler, asc);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
@@ -76,42 +74,23 @@ public class Node extends ComponentDefinition {
     Handler<GETRequest> getRequestHandler = new Handler<GETRequest>() {
         @Override
         public void handle(GETRequest getRequest) {
-            int key = getRequest.getKv().getKey();
-            InitReadRequest initReadRequest = new InitReadRequest(key, neighbours);
-            trigger(initReadRequest, riwm);
-        }
-    };
-
-    Handler<ReadReturn> readReturnHandler = new Handler<ReadReturn>() {
-        @Override
-        public void handle(ReadReturn readReturn) {
+            trigger(new AscPropose(getRequest), asc);
         }
     };
 
     Handler<PUTRequest> putRequestHandler = new Handler<PUTRequest>() {
         @Override
         public void handle(PUTRequest putRequest) {
-            int key = putRequest.getKv().getKey();
-            InitWriteRequest initWriteRequest = new InitWriteRequest(putRequest.getKv());
-            trigger(initWriteRequest, riwm);
+            trigger(new AscPropose(putRequest), asc);
         }
     };
 
-    Handler<AscPropose> ascProposeHandler = new Handler<AscPropose>() {
-        @Override
-        public void handle(AscPropose ascPropose) {
-        }
-    };
 
     Handler<AscDecide> ascDecideHandler = new Handler<AscDecide>() {
         @Override
-        public void handle(AscDecide writeReturn) {
-        }
-    };
-
-    Handler<WriteReturn> writeReturnHandler = new Handler<WriteReturn>() {
-        @Override
-        public void handle(WriteReturn writeReturn) {
+        public void handle(AscDecide ascDecide) {
+            System.out.println(self + ": num-" + seqNum  + " " + ascDecide.getValue());
+            seqNum++;
         }
     };
 
