@@ -29,7 +29,7 @@ public class NodeParent extends ComponentDefinition {
         Component node = create(Node.class, new Node.Init(init.self, init.neighbours, init.store, init.replicationGroup, init.isLeader, init.bounds));
         connect(node.getNegative(Network.class), network, Channel.TWO_WAY);
 
-        Component epfd = create(EventuallyPerfectFailureDetector.class, new EventuallyPerfectFailureDetector.Init(init.self, init.neighbours));
+        Component epfd = create(EventuallyPerfectFailureDetector.class, new EventuallyPerfectFailureDetector.Init(init.self, init.replicationGroup));
         connect(epfd.getNegative(Network.class), network, Channel.TWO_WAY);
         connect(node.getNegative(FDPort.class), epfd.getPositive(FDPort.class), Channel.TWO_WAY);
         connect(epfd.getNegative(Timer.class), timer, Channel.TWO_WAY);

@@ -5,6 +5,7 @@ import se.sics.kompics.simulator.events.system.KillNodeEvent;
 import sim.preload.DatastoreFactory;
 import system.KVEntry;
 import system.client.ClientParent;
+import system.client.event.CASRequest;
 import system.client.event.GETRequest;
 import system.client.event.PUTRequest;
 import system.data.Bound;
@@ -47,7 +48,7 @@ public class ScenarioGen {
                         neighbours = datastoreFactory.getNeighbours();
                         isLeader = false;
                         bound = datastoreFactory.getBoundsByIpSuffix(self);
-                        if(self == 4) {
+                        if(self == 1) {
                             isLeader = true;
                         }
 
@@ -152,6 +153,45 @@ public class ScenarioGen {
         }
     };
 
+    static Operation1 startCASClient = new Operation1<StartNodeEvent, Integer>() {
+        @Override
+        public StartNodeEvent generate(final Integer val) {
+            return new StartNodeEvent() {
+                TAddress selfAdr;
+                ArrayList<TAddress> nodes;
+                TMessage command;
+                {
+                    try {
+                        //Client is started on ip ending with 100
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + 100), 10000);
+                        //Nodes to send GETRequest to
+                        ArrayList<TAddress> nodes = new ArrayList<>();
+                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
+                        KVEntry kv = new KVEntry(5,1,0);
+                        this.command = new CASRequest(selfAdr, nodes.get(0), kv, 100);
+                        this.nodes = nodes;
+                    } catch (UnknownHostException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                @Override
+                public Address getNodeAddress() {
+                    return selfAdr;
+                }
+
+                @Override
+                public Class<? extends ComponentDefinition> getComponentDefinition() {
+                    return ClientParent.class;
+                }
+
+                @Override
+                public Init getComponentInit() {
+                    return new ClientParent.Init(selfAdr, nodes, command);
+                }
+            };
+        }
+    };
+
 
 
     static Operation1 killNode = new Operation1<KillNodeEvent, Integer>() {
@@ -212,7 +252,7 @@ public class ScenarioGen {
                 StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                        raise(3, nodeGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 
@@ -220,19 +260,27 @@ public class ScenarioGen {
                 StochasticProcess putClient = new StochasticProcess() {
                         {
                             eventInterArrivalTime(constant(1));
-                            raise(1000, startPUTClient, new BasicIntSequentialDistribution(1));
+                            raise(1, startPUTClient, new BasicIntSequentialDistribution(1));
                         }
             };
+
+                StochasticProcess casClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(1));
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1));
+                    }
+                };
 
                 StochasticProcess getClient = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(1));
-                        raise(1000, startGETClient);
+                        raise(1, startGETClient);
                     }
                 };
                 nodeGroupProcess.start();
                 putClient.start();
-                getClient.start();
+                casClient.startAfterTerminationOf(1000, putClient);
+                getClient.startAfterTerminationOf(1000, casClient);
                 terminateAfterTerminationOf(1000, getClient);
             }
         };
@@ -248,7 +296,7 @@ public class ScenarioGen {
                 StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                        raise(3, nodeGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 

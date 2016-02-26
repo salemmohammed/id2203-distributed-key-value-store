@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
+import system.client.event.CASRequest;
 import system.client.event.Command;
 import system.client.event.GETRequest;
 import system.KVEntry;
@@ -55,6 +56,7 @@ public class Node extends ComponentDefinition {
 
         subscribe(getRequestHandler, net);
         subscribe(putRequestHandler, net);
+        subscribe(casRequestHandler, net);
 
         subscribe(ascDecideHandler, asc);
 
@@ -81,6 +83,13 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(PUTRequest putRequest) {
             trigger(new AscPropose(putRequest), asc);
+        }
+    };
+
+    Handler<CASRequest> casRequestHandler = new Handler<CASRequest>() {
+        @Override
+        public void handle(CASRequest casRequest) {
+            trigger(new AscPropose(casRequest), asc);
         }
     };
 

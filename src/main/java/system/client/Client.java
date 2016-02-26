@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
+import system.client.event.CASReply;
 import system.client.event.GETReply;
 import system.client.event.GETRequest;
 import system.KVEntry;
@@ -14,9 +15,6 @@ import system.network.TMessage;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- * Created by Robin on 2016-02-13.
- */
 public class Client extends ComponentDefinition {
 
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
@@ -33,6 +31,7 @@ public class Client extends ComponentDefinition {
         subscribe(startHandler, control);
         subscribe(getReplyHandler, net);
         subscribe(putReplyHandler, net);
+        subscribe(casReplyHandler, net);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
@@ -45,16 +44,28 @@ public class Client extends ComponentDefinition {
     Handler<GETReply> getReplyHandler = new Handler<GETReply>() {
         @Override
         public void handle(GETReply getReply) {
-            System.out.println("received GETREPLY: key-" + getReply.getKey() + " value-" +getReply.getKeyValue());
+            System.out.println(self + ": Received GETREPLY key-" + getReply.getKVEntry().getKey() + " value-" +getReply.getKVEntry().getValue());
          //   System.out.println(self+": Received GETReply KEY: " + getReply.getKeyValue().getKey() + " VALUE: " + getReply.getKeyValue().getValue());
         }
     };
 
     Handler<PUTReply> putReplyHandler = new Handler<PUTReply>() {
         @Override
-        public void handle(PUTReply getReply) {
-            System.out.println("received PUTREPLY: key-" + getReply.getKey() + " value-" +getReply.getKeyValue());
+        public void handle(PUTReply putReply) {
+            System.out.println(self +  ": Received PUTREPLY: key-" + putReply.getKv().getKey() + " value-"+putReply.getKv().getValue() + " success-" + putReply.successful);
             //   System.out.println(self+": Received GETReply KEY: " + getReply.getKeyValue().getKey() + " VALUE: " + getReply.getKeyValue().getValue());
+        }
+    };
+
+    Handler<CASReply> casReplyHandler = new Handler<CASReply>() {
+        @Override
+        public void handle(CASReply casReply) {
+            if(casReply.successful) {
+                System.out.println(self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getOldValue() + " newValue-"+casReply.getKVEntry().getValue());
+            }
+            else {
+                System.out.println(self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getKVEntry().getValue() + " newValue-" + casReply.getOldValue());
+            }
         }
     };
 
