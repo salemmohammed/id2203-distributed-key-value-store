@@ -93,7 +93,7 @@ public class DatastoreFactory {
     }
 
     public static HashMap<Integer, KVEntry> getHashMapByIpSuffix(int suffix) {
-        return stores[arrayId(suffix)];
+        return (HashMap<Integer, KVEntry>)stores[arrayId(suffix)].clone();
     }
 
     private static int arrayId(int suffix) {

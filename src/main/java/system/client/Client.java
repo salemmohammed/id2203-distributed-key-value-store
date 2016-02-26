@@ -37,8 +37,8 @@ public class Client extends ComponentDefinition {
     Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start event) {
-            System.out.println("Sending command " + command);
                 trigger((command), net);
+            System.out.println("\n" + self + " Sent " + command);
         }
     };
 
@@ -46,7 +46,6 @@ public class Client extends ComponentDefinition {
         @Override
         public void handle(GETReply getReply) {
             System.out.println(self + ": Received GETREPLY key-" + getReply.getKVEntry().getKey() + " value-" +getReply.getKVEntry().getValue());
-         //   System.out.println(self+": Received GETReply KEY: " + getReply.getKeyValue().getKey() + " VALUE: " + getReply.getKeyValue().getValue());
         }
     };
 
@@ -54,7 +53,6 @@ public class Client extends ComponentDefinition {
         @Override
         public void handle(PUTReply putReply) {
             System.out.println(self +  ": Received PUTREPLY: key-" + putReply.getKv().getKey() + " value-"+putReply.getKv().getValue() + " success-" + putReply.successful);
-            //   System.out.println(self+": Received GETReply KEY: " + getReply.getKeyValue().getKey() + " VALUE: " + getReply.getKeyValue().getValue());
         }
     };
 

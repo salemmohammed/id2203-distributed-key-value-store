@@ -31,6 +31,7 @@ public class ReplicatedStateMachine extends ComponentDefinition {
     Handler<ExecuteCommand> executeHandler = new Handler<ExecuteCommand>() {
         @Override
         public void handle(ExecuteCommand event) {
+            System.out.println(self + "  " + store.toString());
 
             Command command = event.getCommand();
 
@@ -38,19 +39,18 @@ public class ReplicatedStateMachine extends ComponentDefinition {
 
             if(command instanceof GETRequest) {
                 response = executeGet(command);
-                System.out.println("Received get");
+                //System.out.println("Received get");
             }
 
             if(command instanceof PUTRequest) {
                 response = executePut(command);
-                System.out.println("Received put");
+                //System.out.println("Received put");
             }
 
             if(command instanceof CASRequest) {
-               response = executeCas(command);
-                System.out.println("Received cas");
+                response = executeCas(command);
+                //System.out.println("Received cas");
             }
-
             trigger(response, rsm);
         }
     };
@@ -88,7 +88,6 @@ public class ReplicatedStateMachine extends ComponentDefinition {
             putReply = new PUTReply(self, command.getSource(), null);
             putReply.successful = false;
         }
-
         response = new ExecuteReponse(putReply);
 
         return response;
@@ -110,9 +109,11 @@ public class ReplicatedStateMachine extends ComponentDefinition {
                 casReply.successful = false;
             }
         }
-
+        else {
+            casReply = new CASReply(self, command.getSource(), kv, -1);
+            casReply.successful = false;
+        }
         response = new ExecuteReponse(casReply);
-
         return response;
     }
 

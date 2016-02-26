@@ -21,8 +21,8 @@ import java.util.function.BiConsumer;
  */
 public class AbortableSequenceConsensus extends ComponentDefinition {
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(AbortableSequenceConsensus.class);
+    //private static Logger logger = LoggerFactory
+      //      .getLogger(AbortableSequenceConsensus.class);
 
     private int t;
     private int prepts;
@@ -47,6 +47,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Positive<Network> net = requires(Network.class);
 
     public AbortableSequenceConsensus(Init init) {
+
         this.self = init.self;
         this.replicationGroup = init.replicationGroup;
         proposedValues = new ArrayList<>();
@@ -75,7 +76,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
             t = t + 1;
             Object proposal = event.getProposal();
             if(pts == 0) {
-                logger.info(self + ":proposeHandler: First proposal " + event.getProposal());
+                //logger.info(self + ":proposeHandler: First proposal " + event.getProposal());
                 pts = 1; //Should be assigned to unique number
                 pv = prefix(av, al);
                 pl = 0;
@@ -88,11 +89,11 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                 }
             }
             else if(readlist.size() <= replicationGroup.size()/2) {
-                logger.info(self + ":proposeHandler: - readList <= N/2 - Proposing " + proposal);
+               // logger.info(self + ":proposeHandler: - readList <= N/2 - Proposing " + proposal);
                 proposedValues.add(proposal);
             }
             else if(!pv.contains(proposal)) {
-                logger.info(self + ":proposeHandler: - pv not contains - Proposing " + proposal);
+               // logger.info(self + ":proposeHandler: - pv not contains - Proposing " + proposal);
                 pv.add(proposal);
                 for (TAddress p : replicationGroup){
                     if (readlist.containsKey(p)){
@@ -120,15 +121,15 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Handler<Prepare> prepareHandler = new Handler<Prepare>() {
         @Override
         public void handle(Prepare event) {
-            logger.info(self + ":prepareHandler: - Received a PREPARE");
+           // logger.info(self + ":prepareHandler: - Received a PREPARE");
             t = Math.max(event.getT(), t) + 1;
             if(event.getPts() < prepts) {
-                logger.info(self + ":prepareMsgHandler: - getPts < prepts = Conflicting proposer");
+              //  logger.info(self + ":prepareMsgHandler: - getPts < prepts = Conflicting proposer");
                 trigger(new Nack(self, event.getSource(), event.getPts(), t), net);
             }
             else {
                 prepts = event.getPts();
-                logger.info(self + ":prepareMsgHandler: - Sending PrepareAck message");
+             //   logger.info(self + ":prepareMsgHandler: - Sending PrepareAck message");
                 trigger(new PrepareAck(self, event.getSource(), event.getPts(), ats, suffix(av, al), al, t), net);
             }
 
@@ -139,7 +140,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Handler<Nack> nackHandler = new Handler<Nack>() {
         @Override
         public void handle(Nack event) {
-            logger.info(self + ":nackHandler: - Received NACK, mayday - commencing abort sequence");
+           // logger.info(self + ":nackHandler: - Received NACK, mayday - commencing abort sequence");
             t = Integer.max(t, event.getT()) + 1;
             if(event.getTs() == pts) {
                 pts = 0;
@@ -152,11 +153,11 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Handler<PrepareAck> prepareAckHandler = new Handler<PrepareAck>() {
         @Override
         public void handle(PrepareAck event) {
-            logger.info(self + ":prepAckHandler: - Received a PREPAREACK message");
+         //  logger.info(self + ":prepAckHandler: - Received a PREPAREACK message");
             t = Math.max(event.getT(), t) + 1;
             List<Object> vsuf = event.getVsuf();
             if(event.getTs() == pts) {
-                logger.info(self + ":prepAckHandler: - pts' == pts'' ");
+               // logger.info(self + ":prepAckHandler: - pts' == pts'' ");
                 readlist.put(event.getSource(), new ReadItem(event.getAts(), vsuf));
                 decided.put(event.getSource(), event.getAl());
                 if (readlist.size() == (replicationGroup.size() / 2 + 1)) {
@@ -181,13 +182,13 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                         }
                     }
 
-                    logger.info(self + ":prepAckHandler: pv vector " + pv);
+                 //   logger.info(self + ":prepAckHandler: pv vector " + pv);
 
                     for (TAddress node : replicationGroup) {
                         if (readlist.get(node) != null) {
                             Integer lPrime = new Integer(decided.get(node));
                             trigger(new Accept(self, node, pts, suffix(pv, lPrime), lPrime, t), net);
-                            logger.info(self + ":prepAckHandler: proposing "  +pv.size()+  "" + suffix(pv, lPrime) + " " + lPrime);
+                           // logger.info(self + ":prepAckHandler: proposing "  +pv.size()+  "" + suffix(pv, lPrime) + " " + lPrime);
                         }
                     }
                 }
@@ -255,7 +256,6 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
             t = Math.max(t, event.getT()) + 1;
             if(event.getPts() == prepts) {
                 while(al < event.getPl()) {
-                    System.out.println("HEJ MARCUS " + av.get(al));
                     trigger(new AscDecide(av.get(al)), asc);
                     al++;
                 }

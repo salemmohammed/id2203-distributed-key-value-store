@@ -129,7 +129,7 @@ public class ScenarioGen {
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
-                        KVEntry kv = new KVEntry(5,val,0);
+                        KVEntry kv = new KVEntry(5,100,0);
                         this.command = new PUTRequest(selfAdr, nodes.get(0), kv);
                         this.nodes = nodes;
                     } catch (UnknownHostException ex) {
@@ -168,8 +168,8 @@ public class ScenarioGen {
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
-                        KVEntry kv = new KVEntry(5,1,0);
-                        this.command = new CASRequest(selfAdr, nodes.get(0), kv, 100);
+                        KVEntry kv = new KVEntry(5,100,0);
+                        this.command = new CASRequest(selfAdr, nodes.get(0), kv, 30);
                         this.nodes = nodes;
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
@@ -261,13 +261,13 @@ public class ScenarioGen {
                 StochasticProcess putClient = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(2, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10));
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10));
                     }
                 };
 
                 StochasticProcess casClient = new StochasticProcess() {
                     {
-                        eventInterArrivalTime(constant(100));
+                        eventInterArrivalTime(constant(1000));
                         raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11));
                     }
                 };
@@ -278,8 +278,13 @@ public class ScenarioGen {
                         raise(1, startGETClient, new BasicIntSequentialDistribution(12));
                     }
                 };
+
                 nodeGroupProcess.start();
                 putClient.start();
+                getClient.startAfterTerminationOf(5000, putClient);
+                casClient.startAfterTerminationOf(5000, getClient);
+                getClient.startAfterTerminationOf(2000, casClient);
+
 
             }
         };
