@@ -1,17 +1,16 @@
 package system.coordination.paxos;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
-import se.sics.kompics.network.Address;
 import se.sics.kompics.network.Network;
 import system.coordination.paxos.event.*;
 import system.coordination.paxos.port.AbortableSequenceConsensusPort;
 import system.network.TAddress;
-import system.network.TMessage;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +20,9 @@ import java.util.function.BiConsumer;
  * Created by marcus on 23/02/16.
  */
 public class AbortableSequenceConsensus extends ComponentDefinition {
+
+    private static final Logger logger = LoggerFactory
+            .getLogger(AbortableSequenceConsensus.class);
 
     private int t;
     private int prepts;
@@ -67,6 +69,9 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Handler<AscPropose> proposeHandler = new Handler<AscPropose>() {
         @Override
         public void handle(AscPropose event) {
+
+            logger.info("proposeHandler - Received a PROPOSAL command!");
+
             t = t + 1;
             Object proposal = event.getProposal();
             if(pts == 0) {
@@ -77,14 +82,18 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                 readlist.clear();
                 accepted = new HashMap<>();
                 decided = new HashMap<>();
+
+
                 for(TAddress address : replicationGroup) {
                     trigger(new Prepare(self, address, pts, al, t), net);
                 }
             }
             else if(readlist.size() <= replicationGroup.size()/2) {
+                logger.info("proposeHandler - readList <= N/2");
                 proposedValues.add(proposal);
             }
             else if(!pv.contains(proposal)) {
+                logger.info("proposeHandler - pv does not contain proposed value");
                 pv.add(proposal);
                 for (TAddress p : replicationGroup){
                     if (readlist.containsKey(p)){
@@ -113,12 +122,16 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Handler<Prepare> prepareHandler = new Handler<Prepare>() {
         @Override
         public void handle(Prepare event) {
+            logger.info("prepareMsgHandler - Received a PREPARE event!");
             t = Math.max(event.getT(), t) + 1;
             if(event.getPts() < prepts) {
+                logger.info("prepareMsgHandler - getPts < prepts");
+                logger.info("prepareMsgHandler - Sending N-ACK message");
                 trigger(new Nack(self, event.getSource(), event.getPts(), t), net);
             }
             else {
                 prepts = event.getPts();
+                logger.info("prepareMsgHanlder - Sending Prepare-ACK message");
                 trigger(new PrepareAck(self, event.getSource(), event.getPts(), ats, suffix(av, al), al, t), net);
             }
 
