@@ -247,17 +247,6 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
         }
     };
 
-
-
-
-
-
-
-
-
-
-
-
     public static class Init extends se.sics.kompics.Init<AbortableSequenceConsensus> {
         private TAddress self;
         private ArrayList<TAddress> replicationGroup;

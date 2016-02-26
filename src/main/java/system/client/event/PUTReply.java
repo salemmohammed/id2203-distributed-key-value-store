@@ -1,32 +1,20 @@
 package system.client.event;
 
-import se.sics.kompics.network.Transport;
+import system.KVEntry;
 import system.network.TAddress;
-import system.network.THeader;
-import system.network.TMessage;
 
-/**
- * Created by Robin on 2016-02-13.
- */
-public class PUTReply extends TMessage {
+public class PUTReply extends Command{
 
-    private Integer key;
-    private Integer value;
+    private KVEntry kv;
+    public boolean successful;
 
-
-    public PUTReply(TAddress src, TAddress dst, Integer key, Integer value) {
-        super(src, dst, Transport.TCP);
-        this.key = key;
-        this.value = value;
+    public PUTReply(TAddress src, TAddress dst, KVEntry kv) {
+        super(src, dst);
+        this.kv = kv;
     }
 
-    public PUTReply(THeader header) {
-        super(header);
+    public KVEntry getKv() {
+        return kv;
     }
-    public Integer getKeyValue() {
-        return value;
-    }
-    public Integer getKey() {
-        return key;
-    }
+
 }

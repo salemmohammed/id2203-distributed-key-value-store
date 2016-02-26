@@ -10,11 +10,8 @@ import system.client.event.PUTRequest;
 import system.coordination.paxos.event.AscDecide;
 import system.coordination.paxos.event.AscPropose;
 import system.coordination.paxos.port.AbortableSequenceConsensusPort;
-import system.coordination.riwm.event.InitReadRequest;
-import system.coordination.riwm.event.InitWriteRequest;
-import system.coordination.riwm.event.ReadReturn;
-import system.coordination.riwm.event.WriteReturn;
-import system.coordination.riwm.port.RIWMPort;
+import system.coordination.rsm.ReplicatedStateMachine;
+import system.coordination.rsm.port.RSMPort;
 import system.data.Bound;
 import system.port.epfd.FDPort;
 import system.epfd.event.Restore;
@@ -30,11 +27,11 @@ public class Node extends ComponentDefinition {
     private ArrayList<TAddress> replicationGroup;
     private Bound bounds;
 
-    private HashMap<Integer, KVEntry> store;
     private final ArrayList<TAddress> neighbours;
     Positive<Network> net = requires(Network.class);
     Positive<FDPort> epfd = requires(FDPort.class);
     Positive<AbortableSequenceConsensusPort> asc = requires(AbortableSequenceConsensusPort.class);
+    Positive<RSMPort> rsm = requires(RSMPort.class);
 
     private int seqNum = 0;
 
@@ -44,8 +41,6 @@ public class Node extends ComponentDefinition {
     public Node(Init init) {
         this.self = init.self;
         this.neighbours = init.neighbours;
-        this.store = init.store;
-        System.out.println(store.toString());
         this.replicationGroup = init.replicationGroup;
         this.isLeader = init.isLeader;
         this.bounds = init.bounds;
@@ -66,7 +61,6 @@ public class Node extends ComponentDefinition {
                 public void handle(Start event) {
                     //Send initial message to verify connectivity
                     Iterator it = neighbours.iterator();
-                    LOG.info(self.toString() + ": Start Event Triggered (Store= " + store+")");
                     LOG.info(self.toString() + ": Start Event Triggered (Replication= " + replicationGroup+")");
         }
     };
