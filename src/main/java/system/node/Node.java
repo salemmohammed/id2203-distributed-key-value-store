@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
+import system.client.event.Command;
 import system.client.event.GETRequest;
 import system.KVEntry;
 import system.client.event.PUTRequest;
@@ -11,6 +12,8 @@ import system.coordination.paxos.event.AscDecide;
 import system.coordination.paxos.event.AscPropose;
 import system.coordination.paxos.port.AbortableSequenceConsensusPort;
 import system.coordination.rsm.ReplicatedStateMachine;
+import system.coordination.rsm.event.ExecuteCommand;
+import system.coordination.rsm.event.ExecuteReponse;
 import system.coordination.rsm.port.RSMPort;
 import system.data.Bound;
 import system.port.epfd.FDPort;
@@ -54,6 +57,8 @@ public class Node extends ComponentDefinition {
         subscribe(putRequestHandler, net);
 
         subscribe(ascDecideHandler, asc);
+
+        subscribe(executeReponseHandler, rsm);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
@@ -83,8 +88,15 @@ public class Node extends ComponentDefinition {
     Handler<AscDecide> ascDecideHandler = new Handler<AscDecide>() {
         @Override
         public void handle(AscDecide ascDecide) {
-            System.out.println(self + ": num-" + seqNum  + " " + ascDecide.getValue());
-            seqNum++;
+            ExecuteCommand executeCommand = new ExecuteCommand((Command) ascDecide.getValue());
+            trigger(executeCommand, rsm);
+        }
+    };
+
+    Handler<ExecuteReponse> executeReponseHandler = new Handler<ExecuteReponse>() {
+        @Override
+        public void handle(ExecuteReponse executeReponse) {
+            trigger(executeReponse.getCommand(), net);
         }
     };
 
