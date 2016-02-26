@@ -41,7 +41,7 @@ public class NodeParent extends ComponentDefinition {
         connect(node.getNegative(AbortableSequenceConsensusPort.class), asc.getPositive(AbortableSequenceConsensusPort.class), Channel.TWO_WAY);
         connect(asc.getNegative(Network.class), network, Channel.TWO_WAY);
 
-        Component rsm = create(ReplicatedStateMachine.class, new ReplicatedStateMachine.Init(init.self,init.bounds, init.store));
+        Component rsm = create(ReplicatedStateMachine.class, new ReplicatedStateMachine.Init(init.self, init.bounds, init.store));
         connect(node.getNegative(RSMPort.class), rsm.getPositive(RSMPort.class), Channel.TWO_WAY);
 
     }

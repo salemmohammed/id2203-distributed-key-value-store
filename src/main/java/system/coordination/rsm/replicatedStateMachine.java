@@ -5,7 +5,6 @@ import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
 import system.KVEntry;
 import system.client.event.*;
-import system.coordination.paxos.AbortableSequenceConsensus;
 import system.coordination.rsm.event.ExecuteCommand;
 import system.coordination.rsm.event.ExecuteReponse;
 import system.coordination.rsm.port.RSMPort;
@@ -25,6 +24,8 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         this.self = init.self;
         this.partition = init.partition;
         this.store = init.store;
+
+        subscribe(executeHandler, rsm);
     }
 
     Handler<ExecuteCommand> executeHandler = new Handler<ExecuteCommand>() {
@@ -119,7 +120,7 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         return false;
     }
 
-    public static class Init extends se.sics.kompics.Init<AbortableSequenceConsensus> {
+    public static class Init extends se.sics.kompics.Init<ReplicatedStateMachine> {
         private TAddress self;
         private Bound partition;
         public HashMap<Integer, KVEntry> store;
