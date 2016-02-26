@@ -7,12 +7,11 @@ import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 import system.beb.BestEffortBroadcast;
-import system.beb.BestEffortBroadcastPort;
 import system.KVEntry;
 import system.coordination.paxos.AbortableSequenceConsensus;
 import system.coordination.paxos.port.AbortableSequenceConsensusPort;
-import system.coordination.riwm.ReadImposeWriteMajority;
-import system.coordination.riwm.port.RIWMPort;
+import system.coordination.rsm.ReplicatedStateMachine;
+import system.coordination.rsm.port.RSMPort;
 import system.data.Bound;
 import system.epfd.EventuallyPerfectFailureDetector;
 import system.port.epfd.FDPort;
@@ -41,6 +40,9 @@ public class NodeParent extends ComponentDefinition {
         Component asc = create(AbortableSequenceConsensus.class, new AbortableSequenceConsensus.Init(init.self, init.replicationGroup));
         connect(node.getNegative(AbortableSequenceConsensusPort.class), asc.getPositive(AbortableSequenceConsensusPort.class), Channel.TWO_WAY);
         connect(asc.getNegative(Network.class), network, Channel.TWO_WAY);
+
+        Component rsm = create(ReplicatedStateMachine.class, new ReplicatedStateMachine.Init(init.self,init.bounds, init.store));
+        connect(node.getNegative(RSMPort.class), rsm.getPositive(RSMPort.class), Channel.TWO_WAY);
 
     }
 
