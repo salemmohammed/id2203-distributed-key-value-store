@@ -38,14 +38,17 @@ public class ReplicatedStateMachine extends ComponentDefinition {
 
             if(command instanceof GETRequest) {
                 response = executeGet(command);
+                System.out.println("Received get");
             }
 
             if(command instanceof PUTRequest) {
                 response = executePut(command);
+                System.out.println("Received put");
             }
 
             if(command instanceof CASRequest) {
                response = executeCas(command);
+                System.out.println("Received cas");
             }
 
             trigger(response, rsm);

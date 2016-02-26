@@ -161,6 +161,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                     });
 
                     pv.addAll(vsufPrime);
+
                     for (Object value : proposedValues) {
                         if (!pv.contains(value)) {
                             pv.add(value);

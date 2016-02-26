@@ -75,6 +75,7 @@ public class Node extends ComponentDefinition {
     Handler<GETRequest> getRequestHandler = new Handler<GETRequest>() {
         @Override
         public void handle(GETRequest getRequest) {
+            System.out.println("proposing get");
             trigger(new AscPropose(getRequest), asc);
         }
     };
@@ -82,6 +83,7 @@ public class Node extends ComponentDefinition {
     Handler<PUTRequest> putRequestHandler = new Handler<PUTRequest>() {
         @Override
         public void handle(PUTRequest putRequest) {
+            System.out.println("proposing put");
             trigger(new AscPropose(putRequest), asc);
         }
     };
@@ -89,6 +91,7 @@ public class Node extends ComponentDefinition {
     Handler<CASRequest> casRequestHandler = new Handler<CASRequest>() {
         @Override
         public void handle(CASRequest casRequest) {
+            System.out.println("proposing cas");
             trigger(new AscPropose(casRequest), asc);
         }
     };
@@ -97,6 +100,7 @@ public class Node extends ComponentDefinition {
     Handler<AscDecide> ascDecideHandler = new Handler<AscDecide>() {
         @Override
         public void handle(AscDecide ascDecide) {
+            System.out.println("Decided " + ascDecide.getValue());
             ExecuteCommand executeCommand = new ExecuteCommand((Command) ascDecide.getValue());
             trigger(executeCommand, rsm);
         }

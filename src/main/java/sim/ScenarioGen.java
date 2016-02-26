@@ -1,6 +1,7 @@
 package sim;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.simulator.adaptor.Operation;
+import se.sics.kompics.simulator.adaptor.Operation2;
 import se.sics.kompics.simulator.events.system.KillNodeEvent;
 import sim.preload.DatastoreFactory;
 import system.KVEntry;
@@ -75,9 +76,9 @@ public class ScenarioGen {
         }
     };
 
-    static Operation startGETClient = new Operation<StartNodeEvent>() {
+    static Operation1 startGETClient = new Operation1<StartNodeEvent, Integer>() {
         @Override
-        public StartNodeEvent generate() {
+        public StartNodeEvent generate(final Integer ip) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
@@ -85,7 +86,7 @@ public class ScenarioGen {
                 {
                     try {
                         //Client is started on ip ending with 100
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + 100), 10000);
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + ip), 10000);
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
@@ -114,9 +115,9 @@ public class ScenarioGen {
         }
     };
 
-    static Operation1 startPUTClient = new Operation1<StartNodeEvent, Integer>() {
+    static Operation2 startPUTClient = new Operation2<StartNodeEvent, Integer, Integer>() {
         @Override
-        public StartNodeEvent generate(final Integer val) {
+        public StartNodeEvent generate(final Integer val, final Integer ip) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
@@ -124,7 +125,7 @@ public class ScenarioGen {
                 {
                     try {
                         //Client is started on ip ending with 100
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + 100), 10000);
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + ip), 10000);
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
@@ -153,9 +154,9 @@ public class ScenarioGen {
         }
     };
 
-    static Operation1 startCASClient = new Operation1<StartNodeEvent, Integer>() {
+    static Operation2 startCASClient = new Operation2<StartNodeEvent, Integer, Integer>() {
         @Override
-        public StartNodeEvent generate(final Integer val) {
+        public StartNodeEvent generate(final Integer val, final Integer ip) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
@@ -163,7 +164,7 @@ public class ScenarioGen {
                 {
                     try {
                         //Client is started on ip ending with 100
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + 100), 10000);
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + ip), 10000);
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
@@ -231,7 +232,7 @@ public class ScenarioGen {
                 StochasticProcess getClient = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(1, startGETClient);
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(2));
                     }
                 };
 
@@ -258,30 +259,28 @@ public class ScenarioGen {
 
                 //Start client that gets a value
                 StochasticProcess putClient = new StochasticProcess() {
-                        {
-                            eventInterArrivalTime(constant(1));
-                            raise(1, startPUTClient, new BasicIntSequentialDistribution(1));
-                        }
-            };
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(2, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10));
+                    }
+                };
 
                 StochasticProcess casClient = new StochasticProcess() {
                     {
-                        eventInterArrivalTime(constant(1));
-                        raise(1, startCASClient, new BasicIntSequentialDistribution(1));
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11));
                     }
                 };
 
                 StochasticProcess getClient = new StochasticProcess() {
                     {
-                        eventInterArrivalTime(constant(1));
-                        raise(1, startGETClient);
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(12));
                     }
                 };
                 nodeGroupProcess.start();
                 putClient.start();
-                casClient.startAfterTerminationOf(1000, putClient);
-                getClient.startAfterTerminationOf(1000, casClient);
-                terminateAfterTerminationOf(1000, getClient);
+
             }
         };
 

@@ -37,6 +37,7 @@ public class Client extends ComponentDefinition {
     Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start event) {
+            System.out.println("Sending command " + command);
                 trigger((command), net);
         }
     };
