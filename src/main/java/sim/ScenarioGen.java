@@ -218,10 +218,10 @@ public class ScenarioGen {
 
                 //Start client that gets a value
                 StochasticProcess putClient = new StochasticProcess() {
-                {
-                    eventInterArrivalTime(constant(1));
-                    raise(1000, startPUTClient, new BasicIntSequentialDistribution(1));
-                }
+                        {
+                            eventInterArrivalTime(constant(1));
+                            raise(1000, startPUTClient, new BasicIntSequentialDistribution(1));
+                        }
             };
 
                 StochasticProcess getClient = new StochasticProcess() {
