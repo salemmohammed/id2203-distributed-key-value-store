@@ -70,11 +70,12 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
         @Override
         public void handle(AscPropose event) {
 
-            logger.info("proposeHandler - Received a PROPOSAL command!");
+
 
             t = t + 1;
             Object proposal = event.getProposal();
             if(pts == 0) {
+                logger.info(self + ":proposeHandler: First proposal " + event.getProposal());
                 pts = 1; //Should be assigned to unique number
                 pv = prefix(av, al);
                 pl = 0;
@@ -82,18 +83,16 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                 readlist.clear();
                 accepted = new HashMap<>();
                 decided = new HashMap<>();
-
-
                 for(TAddress address : replicationGroup) {
                     trigger(new Prepare(self, address, pts, al, t), net);
                 }
             }
             else if(readlist.size() <= replicationGroup.size()/2) {
-                logger.info("proposeHandler - readList <= N/2");
+                logger.info(self + ":proposeHandler: - readList <= N/2 - Proposing " + proposal);
                 proposedValues.add(proposal);
             }
             else if(!pv.contains(proposal)) {
-                logger.info("proposeHandler - pv does not contain proposed value");
+                logger.info(self + ":proposeHandler: - pv not contains - Proposing " + proposal);
                 pv.add(proposal);
                 for (TAddress p : replicationGroup){
                     if (readlist.containsKey(p)){
@@ -104,7 +103,6 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                 }
             }
             }
-
     };
 
     private ArrayList prefix(ArrayList <Object> av, int al){
@@ -116,22 +114,21 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
         }
 
     private ArrayList<Object> suffix(ArrayList<Object> vsuf, int al) {
-        return new ArrayList<Object>(av.subList(al, av.size()));
+        return new ArrayList<Object>(vsuf.subList(al, vsuf.size()));
     }
 
     Handler<Prepare> prepareHandler = new Handler<Prepare>() {
         @Override
         public void handle(Prepare event) {
-            logger.info("prepareMsgHandler - Received a PREPARE event!");
+            logger.info(self + ":prepareHandler: - Received a PREPARE");
             t = Math.max(event.getT(), t) + 1;
             if(event.getPts() < prepts) {
-                logger.info("prepareMsgHandler - getPts < prepts");
-                logger.info("prepareMsgHandler - Sending N-ACK message");
+                logger.info(self + ":prepareMsgHandler: - getPts < prepts = Conflicting proposer");
                 trigger(new Nack(self, event.getSource(), event.getPts(), t), net);
             }
             else {
                 prepts = event.getPts();
-                logger.info("prepareMsgHanlder - Sending Prepare-ACK message");
+                logger.info(self + ":prepareMsgHandler: - Sending PrepareAck message");
                 trigger(new PrepareAck(self, event.getSource(), event.getPts(), ats, suffix(av, al), al, t), net);
             }
 
@@ -142,6 +139,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Handler<Nack> nackHandler = new Handler<Nack>() {
         @Override
         public void handle(Nack event) {
+            logger.info(self + ":nackHandler: - Received NACK, mayday - commencing abort sequence");
             t = Integer.max(t, event.getT()) + 1;
             if(event.getTs() == pts) {
                 pts = 0;
@@ -154,9 +152,11 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Handler<PrepareAck> prepareAckHandler = new Handler<PrepareAck>() {
         @Override
         public void handle(PrepareAck event) {
+            logger.info(self + ":prepAckHandler: - Received a PREPAREACK message");
             t = Math.max(event.getT(), t) + 1;
             List<Object> vsuf = event.getVsuf();
             if(event.getTs() == pts) {
+                logger.info(self + ":prepAckHandler: - pts' == pts'' ");
                 readlist.put(event.getSource(), new ReadItem(event.getAts(), vsuf));
                 decided.put(event.getSource(), event.getAl());
                 if (readlist.size() == (replicationGroup.size() / 2 + 1)) {
@@ -181,10 +181,13 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                         }
                     }
 
+                    logger.info(self + ":prepAckHandler: pv vector " + pv);
+
                     for (TAddress node : replicationGroup) {
                         if (readlist.get(node) != null) {
                             Integer lPrime = new Integer(decided.get(node));
                             trigger(new Accept(self, node, pts, suffix(pv, lPrime), lPrime, t), net);
+                            logger.info(self + ":prepAckHandler: proposing "  +pv.size()+  "" + suffix(pv, lPrime) + " " + lPrime);
                         }
                     }
                 }
@@ -192,7 +195,6 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                     trigger(new Accept(self, event.getSource(), pts, suffix(pv, event.getAl()), event.getAl(), t), net);
                     if(pl != 0) {
                         trigger(new Decide(self, event.getSource(), pts, pl, t), net);
-
                     }
             }
             }
@@ -253,6 +255,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
             t = Math.max(t, event.getT()) + 1;
             if(event.getPts() == prepts) {
                 while(al < event.getPl()) {
+                    System.out.println("HEJ MARCUS " + av.get(al));
                     trigger(new AscDecide(av.get(al)), asc);
                     al++;
                 }
