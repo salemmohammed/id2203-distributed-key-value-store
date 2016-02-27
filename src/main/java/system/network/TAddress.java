@@ -4,6 +4,7 @@ import se.sics.kompics.network.Address;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 
 public class TAddress implements Address {
 
@@ -61,4 +62,9 @@ public class TAddress implements Address {
         return true;
     }
 
+    public int getId() {
+       String [] ipParts = (isa.getAddress().getHostAddress()).split("[.]");
+       int ipLastPart = Integer.parseInt(ipParts[3]);
+        return ipLastPart;
+    }
 }

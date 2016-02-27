@@ -8,7 +8,7 @@ import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
 import system.coordination.paxos.event.*;
-import system.coordination.paxos.port.AbortableSequenceConsensusPort;
+import system.coordination.paxos.port.ASCPort;
 import system.network.TAddress;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     private ArrayList<TAddress> replicationGroup;
     private TAddress self;
 
-    Negative<AbortableSequenceConsensusPort> asc = provides(AbortableSequenceConsensusPort.class);
+    Negative<ASCPort> asc = provides(ASCPort.class);
     Positive<Network> net = requires(Network.class);
 
     public AbortableSequenceConsensus(Init init) {

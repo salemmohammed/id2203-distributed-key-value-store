@@ -9,9 +9,11 @@ import system.client.event.Command;
 import system.client.event.GETRequest;
 import system.KVEntry;
 import system.client.event.PUTRequest;
+import system.coordination.meld.MELDPort;
+import system.coordination.meld.event.Trust;
 import system.coordination.paxos.event.AscDecide;
 import system.coordination.paxos.event.AscPropose;
-import system.coordination.paxos.port.AbortableSequenceConsensusPort;
+import system.coordination.paxos.port.ASCPort;
 import system.coordination.rsm.ReplicatedStateMachine;
 import system.coordination.rsm.event.ExecuteCommand;
 import system.coordination.rsm.event.ExecuteReponse;
@@ -27,29 +29,24 @@ public class Node extends ComponentDefinition {
 
     private static final Logger LOG = LoggerFactory.getLogger(Node.class);
     private final TAddress self;
-    private boolean isLeader;
     private ArrayList<TAddress> replicationGroup;
     private Bound bounds;
+    private TAddress leader;
 
     private final ArrayList<TAddress> neighbours;
     Positive<Network> net = requires(Network.class);
-    Positive<FDPort> epfd = requires(FDPort.class);
-    Positive<AbortableSequenceConsensusPort> asc = requires(AbortableSequenceConsensusPort.class);
+    Positive<ASCPort> asc = requires(ASCPort.class);
+    Positive<MELDPort> meld = requires(MELDPort.class);
     Positive<RSMPort> rsm = requires(RSMPort.class);
-
-    private int seqNum = 0;
 
     public Node(Init init) {
         this.self = init.self;
         this.neighbours = init.neighbours;
         this.replicationGroup = init.replicationGroup;
-        this.isLeader = init.isLeader;
+
         this.bounds = init.bounds;
 
         subscribe(startHandler, control);
-
-        subscribe(suspectHandler, epfd);
-        subscribe(restoreHandler, epfd);
 
         subscribe(getRequestHandler, net);
         subscribe(putRequestHandler, net);
@@ -58,13 +55,13 @@ public class Node extends ComponentDefinition {
         subscribe(ascDecideHandler, asc);
 
         subscribe(executeReponseHandler, rsm);
+
+        subscribe(trustHandler, meld);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
                 @Override
                 public void handle(Start event) {
-                    //Send initial message to verify connectivity
-                    Iterator it = neighbours.iterator();
                     LOG.info(self.toString() + ": Start Event Triggered (Replication= " + replicationGroup+")");
         }
     };
@@ -73,15 +70,30 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(GETRequest getRequest) {
           //  System.out.println("proposing get");
-            trigger(new AscPropose(getRequest), asc);
+            if(self.equals(leader)) {
+                trigger(new AscPropose(getRequest), asc);
+            }
+            else {
+                GETRequest getRequestToLeader = new GETRequest(getRequest.getSource(), leader, getRequest.getKv());
+                trigger(getRequestToLeader, net);
+            }
+
         }
     };
 
     Handler<PUTRequest> putRequestHandler = new Handler<PUTRequest>() {
         @Override
         public void handle(PUTRequest putRequest) {
-           // System.out.println("proposing put");
-            trigger(new AscPropose(putRequest), asc);
+            System.out.println("Received put");
+            if(self.equals(leader)) {
+                System.out.println("Inside if");
+                trigger(new AscPropose(putRequest), asc);
+            }
+            else {
+                System.out.println("Inside else");
+                PUTRequest putRequestToLeader = new PUTRequest(putRequest.getSource(), leader, putRequest.getKv());
+                trigger(putRequestToLeader, net);
+            }
         }
     };
 
@@ -89,7 +101,13 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(CASRequest casRequest) {
            // System.out.println("proposing cas");
-            trigger(new AscPropose(casRequest), asc);
+            if(self.equals(leader)) {
+                trigger(new AscPropose(casRequest), asc);
+            }
+            else {
+                CASRequest casRequestToLeader = new CASRequest(casRequest.getSource(), leader, casRequest.getKVEntry(), casRequest.getNewValue());
+                trigger(casRequestToLeader, net);
+            }
         }
     };
 
@@ -99,7 +117,9 @@ public class Node extends ComponentDefinition {
         public void handle(AscDecide ascDecide) {
            // System.out.println("Decided " + ascDecide.getValue());
             ExecuteCommand executeCommand = new ExecuteCommand((Command) ascDecide.getValue());
-            trigger(executeCommand, rsm);
+            if(self.equals(leader)) {
+                trigger(executeCommand, rsm);
+            }
         }
     };
 
@@ -110,19 +130,14 @@ public class Node extends ComponentDefinition {
         }
     };
 
-    Handler<Suspect> suspectHandler = new Handler<Suspect>() {
+    Handler<Trust> trustHandler = new Handler<Trust>() {
         @Override
-        public void handle(Suspect suspect) {
-            System.out.println("Received suspect");
+        public void handle(Trust trust) {
+            leader = trust.getLeader();
+            System.out.println("Received trust, new leader is " + trust);
         }
     };
 
-    Handler<Restore> restoreHandler = new Handler<Restore>() {
-        @Override
-        public void handle(Restore suspect) {
-            System.out.println("Received restore");
-        }
-    };
 
     public static class Init extends se.sics.kompics.Init<Node> {
 

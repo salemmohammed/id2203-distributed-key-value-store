@@ -8,8 +8,10 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 import system.beb.BestEffortBroadcast;
 import system.KVEntry;
+import system.coordination.meld.MELDPort;
+import system.coordination.meld.MonarchicalEventualLeaderDetector;
 import system.coordination.paxos.AbortableSequenceConsensus;
-import system.coordination.paxos.port.AbortableSequenceConsensusPort;
+import system.coordination.paxos.port.ASCPort;
 import system.coordination.rsm.ReplicatedStateMachine;
 import system.coordination.rsm.port.RSMPort;
 import system.data.Bound;
@@ -31,19 +33,22 @@ public class NodeParent extends ComponentDefinition {
 
         Component epfd = create(EventuallyPerfectFailureDetector.class, new EventuallyPerfectFailureDetector.Init(init.self, init.replicationGroup));
         connect(epfd.getNegative(Network.class), network, Channel.TWO_WAY);
-        connect(node.getNegative(FDPort.class), epfd.getPositive(FDPort.class), Channel.TWO_WAY);
         connect(epfd.getNegative(Timer.class), timer, Channel.TWO_WAY);
 
         Component beb = create(BestEffortBroadcast.class, new BestEffortBroadcast.Init(init.self));
         connect(beb.getNegative(Network.class),network, Channel.TWO_WAY);
 
         Component asc = create(AbortableSequenceConsensus.class, new AbortableSequenceConsensus.Init(init.self, init.replicationGroup));
-        connect(node.getNegative(AbortableSequenceConsensusPort.class), asc.getPositive(AbortableSequenceConsensusPort.class), Channel.TWO_WAY);
+        connect(node.getNegative(ASCPort.class), asc.getPositive(ASCPort.class), Channel.TWO_WAY);
         connect(asc.getNegative(Network.class), network, Channel.TWO_WAY);
 
         Component rsm = create(ReplicatedStateMachine.class, new ReplicatedStateMachine.Init(init.self, init.bounds, init.store));
         connect(node.getNegative(RSMPort.class), rsm.getPositive(RSMPort.class), Channel.TWO_WAY);
 
+        Component meld = create(MonarchicalEventualLeaderDetector.class, new MonarchicalEventualLeaderDetector.Init(init.replicationGroup));
+        connect(node.getNegative(MELDPort.class), meld.getPositive(MELDPort.class), Channel.TWO_WAY);
+        connect(meld.getNegative(Timer.class), timer, Channel.TWO_WAY);
+        connect(meld.getNegative(FDPort.class), epfd.getPositive(FDPort.class), Channel.TWO_WAY);
     }
 
     public static class Init extends se.sics.kompics.Init<NodeParent> {

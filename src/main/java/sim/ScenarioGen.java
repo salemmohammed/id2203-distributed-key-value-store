@@ -279,11 +279,25 @@ public class ScenarioGen {
                     }
                 };
 
+                StochasticProcess killreplicationNode1 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess killreplicationNode3 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(3));
+                    }
+                };
+
                 nodeGroupProcess.start();
                 putClient.start();
                 getClient.startAfterTerminationOf(5000, putClient);
-                casClient.startAfterTerminationOf(5000, getClient);
-                getClient.startAfterTerminationOf(2000, casClient);
+                killreplicationNode1.startAfterTerminationOf(5000, getClient);
+                casClient.startAfterTerminationOf(5000, killreplicationNode1);
+                killreplicationNode3.startAfterTerminationOf(5000, casClient);
+                getClient.startAfterTerminationOf(2000, killreplicationNode3);
 
 
             }

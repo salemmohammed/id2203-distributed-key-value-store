@@ -78,14 +78,14 @@ public class EventuallyPerfectFailureDetector extends ComponentDefinition {
                     suspectedNodes.add(neighbour);
                     //Here we trigger program logic for detection of suspected node
                     System.out.println(self.toString() + ": SUSPECT: " + neighbour.toString());
-                    trigger(new Suspect(), epfd);
+                    trigger(new Suspect(neighbour), epfd);
                 }
                 //If we found a node that replied to heartbeat and is also suspected we consider it alive
                 else if (aliveNodes.contains(neighbour) && suspectedNodes.contains(neighbour)) {
                     suspectedNodes.remove(neighbour);
                     //Here we trigger program logic for restore of suspected node
                     System.out.println(self.toString() + ": RESTORE: " + neighbour.toString());
-                    trigger(new Restore(), epfd);
+                    trigger(new Restore(neighbour), epfd);
                 }
                 //Send a new heartbeat
                 trigger(new HeartbeatRequest(self, neighbour), net);
