@@ -2,6 +2,7 @@ package sim;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.simulator.adaptor.Operation;
 import se.sics.kompics.simulator.adaptor.Operation2;
+import se.sics.kompics.simulator.adaptor.Operation3;
 import se.sics.kompics.simulator.events.system.KillNodeEvent;
 import sim.preload.DatastoreFactory;
 import system.KVEntry;
@@ -39,7 +40,7 @@ public class ScenarioGen {
                 ArrayList<TAddress> neighbours = new ArrayList<>();
                 HashMap <Integer, KVEntry> store = new HashMap<>();
                 ArrayList<TAddress> replicationGroup;
-                boolean isLeader;
+                TAddress leader;
                 Bound bound;
                 {
                     try {
@@ -47,11 +48,8 @@ public class ScenarioGen {
                         store = datastoreFactory.getHashMapByIpSuffix(self);
                         replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
                         neighbours = datastoreFactory.getNeighbours();
-                        isLeader = false;
+                        leader = datastoreFactory.getReplicationGroupLeader(self);
                         bound = datastoreFactory.getBoundsByIpSuffix(self);
-                        if(self == 1) {
-                            isLeader = true;
-                        }
 
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
@@ -70,15 +68,15 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, neighbours, store, replicationGroup, isLeader, bound);
+                    return new NodeParent.Init(selfAdr, neighbours, store, replicationGroup, leader, bound);
                 }
             };
         }
     };
 
-    static Operation1 startGETClient = new Operation1<StartNodeEvent, Integer>() {
+    static Operation2 startGETClient = new Operation2<StartNodeEvent, Integer, Integer>() {
         @Override
-        public StartNodeEvent generate(final Integer ip) {
+        public StartNodeEvent generate(final Integer ip, final Integer target) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
@@ -89,7 +87,7 @@ public class ScenarioGen {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + ip), 10000);
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
-                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
+                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), 10000));
                         this.nodes = nodes;
                         KVEntry kv = new KVEntry(5,-1,0);
                         this.command = new GETRequest(selfAdr, nodes.get(0), kv);
@@ -115,9 +113,9 @@ public class ScenarioGen {
         }
     };
 
-    static Operation2 startPUTClient = new Operation2<StartNodeEvent, Integer, Integer>() {
+    static Operation3 startPUTClient = new Operation3<StartNodeEvent, Integer, Integer, Integer>() {
         @Override
-        public StartNodeEvent generate(final Integer val, final Integer ip) {
+        public StartNodeEvent generate(final Integer val, final Integer ip, final Integer target) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
@@ -128,7 +126,7 @@ public class ScenarioGen {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + ip), 10000);
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
-                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
+                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), 10000));
                         KVEntry kv = new KVEntry(5,100,0);
                         this.command = new PUTRequest(selfAdr, nodes.get(0), kv);
                         this.nodes = nodes;
@@ -154,9 +152,9 @@ public class ScenarioGen {
         }
     };
 
-    static Operation2 startCASClient = new Operation2<StartNodeEvent, Integer, Integer>() {
+    static Operation3 startCASClient = new Operation3<StartNodeEvent, Integer, Integer, Integer>() {
         @Override
-        public StartNodeEvent generate(final Integer val, final Integer ip) {
+        public StartNodeEvent generate(final Integer val, final Integer ip, final Integer target) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
@@ -167,7 +165,7 @@ public class ScenarioGen {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + ip), 10000);
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
-                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + 1), 10000));
+                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), 10000));
                         KVEntry kv = new KVEntry(5,100,0);
                         this.command = new CASRequest(selfAdr, nodes.get(0), kv, 30);
                         this.nodes = nodes;
@@ -232,7 +230,7 @@ public class ScenarioGen {
                 StochasticProcess getClient = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(1, startGETClient, new BasicIntSequentialDistribution(2));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(2), new BasicIntSequentialDistribution(3));
                     }
                 };
 
@@ -246,7 +244,7 @@ public class ScenarioGen {
         return getOperationScenario;
     }
 
-    public static SimulationScenario testPUTOperation() {
+    public static SimulationScenario testAllOperations() {
         SimulationScenario putOperationScenario = new SimulationScenario() {
             {
                 //Start three nodes holding even values
@@ -261,21 +259,21 @@ public class ScenarioGen {
                 StochasticProcess putClient = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10));
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(3));
                     }
                 };
 
                 StochasticProcess casClient = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(1000));
-                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11));
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new BasicIntSequentialDistribution(3));
                     }
                 };
 
                 StochasticProcess getClient = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(1, startGETClient, new BasicIntSequentialDistribution(12));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(12), new BasicIntSequentialDistribution(3));
                     }
                 };
 
@@ -285,20 +283,21 @@ public class ScenarioGen {
                     }
                 };
 
+                /*
                 StochasticProcess killreplicationNode3 = new StochasticProcess() {
                     {
                         raise(1, killNode, new BasicIntSequentialDistribution(3));
                     }
                 };
+                */
 
                 nodeGroupProcess.start();
                 putClient.start();
-                getClient.startAfterTerminationOf(5000, putClient);
-                killreplicationNode1.startAfterTerminationOf(5000, getClient);
+                //getClient.startAfterTerminationOf(5000, putClient);
+                killreplicationNode1.startAfterTerminationOf(5000, putClient);
                 casClient.startAfterTerminationOf(5000, killreplicationNode1);
-                killreplicationNode3.startAfterTerminationOf(5000, casClient);
-                getClient.startAfterTerminationOf(2000, killreplicationNode3);
-
+                //killreplicationNode3.startAfterTerminationOf(5000, casClient);
+                getClient.startAfterTerminationOf(2000, casClient);
 
             }
         };

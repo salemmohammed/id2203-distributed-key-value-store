@@ -88,13 +88,18 @@ public class DatastoreFactory {
     }
 
     public static ArrayList<TAddress> getReplicationGroupByIpSuffix(int suffix) {
-        return replicationGroups[arrayId(suffix)];
+        return (ArrayList<TAddress>) replicationGroups[arrayId(suffix)].clone();
 
     }
 
     public static HashMap<Integer, KVEntry> getHashMapByIpSuffix(int suffix) {
         return (HashMap<Integer, KVEntry>)stores[arrayId(suffix)].clone();
     }
+
+    public static TAddress getReplicationGroupLeader(int addressSufix) {
+        return getReplicationGroupByIpSuffix(addressSufix).get(0);
+    }
+
 
     private static int arrayId(int suffix) {
         suffix = suffix-1;

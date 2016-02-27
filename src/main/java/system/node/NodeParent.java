@@ -28,7 +28,7 @@ public class NodeParent extends ComponentDefinition {
     Positive<Timer> timer = requires(Timer.class);
 
     public NodeParent(Init init) {
-        Component node = create(Node.class, new Node.Init(init.self, init.neighbours, init.store, init.replicationGroup, init.isLeader, init.bounds));
+        Component node = create(Node.class, new Node.Init(init.self, init.neighbours, init.store, init.replicationGroup, init.leader, init.bounds));
         connect(node.getNegative(Network.class), network, Channel.TWO_WAY);
 
         Component epfd = create(EventuallyPerfectFailureDetector.class, new EventuallyPerfectFailureDetector.Init(init.self, init.replicationGroup));
@@ -57,15 +57,15 @@ public class NodeParent extends ComponentDefinition {
         public ArrayList<TAddress> neighbours;
         public HashMap <Integer, KVEntry> store;
         ArrayList<TAddress> replicationGroup;
-        public boolean isLeader;
+        public TAddress leader;
         public Bound bounds;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, boolean isLeader, Bound bounds) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, TAddress leader, Bound bounds) {
             this.self = self;
             this.neighbours = neighbours;
             this.store = store;
             this.replicationGroup = replicationGroup;
-            this.isLeader = isLeader;
+            this.leader = leader;
             this.bounds = bounds;
         }
     }

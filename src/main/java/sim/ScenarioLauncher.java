@@ -7,7 +7,7 @@ public class ScenarioLauncher {
     public static void main(String[] args) {
         long seed = 123;
         SimulationScenario.setSeed(seed);
-        SimulationScenario simpleBootScenario = ScenarioGen.testPUTOperation();
+        SimulationScenario simpleBootScenario = ScenarioGen.testAllOperations();
         simpleBootScenario.simulate(LauncherComp.class);
     }
 }

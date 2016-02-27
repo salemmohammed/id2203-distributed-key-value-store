@@ -43,7 +43,7 @@ public class Node extends ComponentDefinition {
         this.self = init.self;
         this.neighbours = init.neighbours;
         this.replicationGroup = init.replicationGroup;
-
+        this.leader = init.leader;
         this.bounds = init.bounds;
 
         subscribe(startHandler, control);
@@ -134,7 +134,7 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(Trust trust) {
             leader = trust.getLeader();
-            System.out.println("Received trust, new leader is " + trust);
+            System.out.println("Received trust, new leader is " + trust.getLeader());
         }
     };
 
@@ -143,17 +143,17 @@ public class Node extends ComponentDefinition {
 
         public final TAddress self;
         public final ArrayList<TAddress> neighbours;
-        public boolean isLeader;
+        public TAddress leader;
         public HashMap<Integer, KVEntry> store;
         public ArrayList<TAddress> replicationGroup;
         public Bound bounds;
 
-        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, boolean isLeader, Bound bounds) {
+        public Init(TAddress self, ArrayList<TAddress> neighbours, HashMap<Integer, KVEntry> store, ArrayList<TAddress> replicationGroup, TAddress leader, Bound bounds) {
             this.self = self;
             this.neighbours = neighbours;
             this.store = store;
             this.replicationGroup = replicationGroup;
-            this.isLeader = isLeader;
+            this.leader = leader;
             this.bounds = bounds;
         }
     }
