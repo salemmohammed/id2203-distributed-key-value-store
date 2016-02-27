@@ -74,9 +74,11 @@ public class Node extends ComponentDefinition {
         public void handle(GETRequest getRequest) {
           //  System.out.println("proposing get");
             if(self.equals(leader)) {
+                System.out.println(self + "      Got get");
                 trigger(new AscPropose(getRequest), asc);
             }
             else {
+                System.out.println(self + "      Forwarding get");
                 GETRequest getRequestToLeader = new GETRequest(getRequest.getSource(), leader, getRequest.getKv());
                 trigger(getRequestToLeader, net);
             }
@@ -87,13 +89,10 @@ public class Node extends ComponentDefinition {
     Handler<PUTRequest> putRequestHandler = new Handler<PUTRequest>() {
         @Override
         public void handle(PUTRequest putRequest) {
-            System.out.println("Received put");
             if(self.equals(leader)) {
-                System.out.println("Inside if");
                 trigger(new AscPropose(putRequest), asc);
             }
             else {
-                System.out.println("Inside else");
                 PUTRequest putRequestToLeader = new PUTRequest(putRequest.getSource(), leader, putRequest.getKv());
                 trigger(putRequestToLeader, net);
             }
@@ -146,6 +145,7 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(Trust trust) {
             leader = trust.getLeader();
+            if(!hold.notempty) //Send all to leader
             System.out.println("Received trust, new leader is " + trust.getLeader());
         }
     };

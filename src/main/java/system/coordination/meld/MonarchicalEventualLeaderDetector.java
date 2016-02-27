@@ -35,11 +35,14 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
         subscribe(checkLeaderHandler, meld);
     }
 
-
     Handler<Suspect> suspectHandler = new Handler<Suspect>() {
         @Override
         public void handle(Suspect suspect) {
             suspected.add(suspect.getNode());
+            if(leader.equals(suspect.getNode())) {
+                leader = maxRank(getAliveNotSuspectedNodes());
+                trigger(new Trust(leader), meld);
+            }
         }
     };
 
@@ -53,7 +56,7 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
     Handler<CheckLeader> checkLeaderHandler = new Handler<CheckLeader>() {
         @Override
         public void handle(CheckLeader checkLeader) {
-            TAddress leader = maxRank(getAliveNotSuspectedNodes());
+            leader = maxRank(getAliveNotSuspectedNodes());
             trigger(new Trust(leader), meld);
         }
     };

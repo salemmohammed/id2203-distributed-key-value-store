@@ -3,6 +3,7 @@ import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.simulator.adaptor.Operation;
 import se.sics.kompics.simulator.adaptor.Operation2;
 import se.sics.kompics.simulator.adaptor.Operation3;
+import se.sics.kompics.simulator.adaptor.distributions.ConstantDistribution;
 import se.sics.kompics.simulator.events.system.KillNodeEvent;
 import sim.preload.DatastoreFactory;
 import system.KVEntry;
@@ -390,9 +391,16 @@ public class ScenarioGen {
                 };
 
                 StochasticProcess getClient2 = new StochasticProcess() {
+                {
+                    eventInterArrivalTime(constant(100));
+                    raise(3, startGETClient, new BasicIntSequentialDistribution(15), new ConstantDistribution<Integer>(Integer.class, 3));
+                }
+            };
+
+                StochasticProcess getClient3 = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(10, startGETClient, new BasicIntSequentialDistribution(15), new BasicIntSequentialDistribution(3));
+                        raise(3, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 2));
                     }
                 };
 
@@ -416,7 +424,8 @@ public class ScenarioGen {
                 casClient.startAfterTerminationOf(5000, getClient);
                 //killreplicationNode3.startAfterTerminationOf(5000, casClient);
                 getClient2.startAfterTerminationOf(2000, casClient);
-
+                killreplicationNode1.startAfterTerminationOf(2000, getClient2);
+                getClient3.startAfterTerminationOf(2000, killreplicationNode1);
 
             }
         };

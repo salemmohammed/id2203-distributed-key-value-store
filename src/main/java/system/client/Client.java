@@ -38,7 +38,7 @@ public class Client extends ComponentDefinition {
         @Override
         public void handle(Start event) {
                 trigger((command), net);
-            System.out.println("\n" + self + " Sent " + command);
+            System.out.println("\n" + self + " Sent " + command + " to " + command.getDestination());
         }
     };
 
