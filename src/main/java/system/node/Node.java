@@ -117,16 +117,17 @@ public class Node extends ComponentDefinition {
         public void handle(AscDecide ascDecide) {
            // System.out.println("Decided " + ascDecide.getValue());
             ExecuteCommand executeCommand = new ExecuteCommand((Command) ascDecide.getValue());
-            if(self.equals(leader)) {
-                trigger(executeCommand, rsm);
-            }
+            trigger(executeCommand, rsm);
         }
     };
 
+    Handler<>
     Handler<ExecuteReponse> executeReponseHandler = new Handler<ExecuteReponse>() {
         @Override
         public void handle(ExecuteReponse executeReponse) {
-            trigger(executeReponse.getCommand(), net);
+            if(self.equals(leader)) {
+                trigger(executeReponse.getCommand(), net);
+            }
         }
     };
 

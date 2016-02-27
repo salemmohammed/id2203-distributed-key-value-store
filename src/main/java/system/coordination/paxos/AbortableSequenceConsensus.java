@@ -70,9 +70,6 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Handler<AscPropose> proposeHandler = new Handler<AscPropose>() {
         @Override
         public void handle(AscPropose event) {
-
-
-
             t = t + 1;
             Object proposal = event.getProposal();
             if(pts == 0) {

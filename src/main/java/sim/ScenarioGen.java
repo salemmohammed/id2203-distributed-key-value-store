@@ -277,6 +277,13 @@ public class ScenarioGen {
                     }
                 };
 
+                StochasticProcess getClient2 = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(15), new BasicIntSequentialDistribution(3));
+                    }
+                };
+
                 StochasticProcess killreplicationNode1 = new StochasticProcess() {
                     {
                         raise(1, killNode, new BasicIntSequentialDistribution(1));
@@ -293,11 +300,12 @@ public class ScenarioGen {
 
                 nodeGroupProcess.start();
                 putClient.start();
-                //getClient.startAfterTerminationOf(5000, putClient);
-                killreplicationNode1.startAfterTerminationOf(5000, putClient);
+                getClient.startAfterTerminationOf(5000, putClient);
+                killreplicationNode1.startAfterTerminationOf(5000, getClient);
                 casClient.startAfterTerminationOf(5000, killreplicationNode1);
                 //killreplicationNode3.startAfterTerminationOf(5000, casClient);
-                getClient.startAfterTerminationOf(2000, casClient);
+                getClient2.startAfterTerminationOf(2000, casClient);
+
 
             }
         };

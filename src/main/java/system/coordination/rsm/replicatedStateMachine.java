@@ -71,6 +71,7 @@ public class ReplicatedStateMachine extends ComponentDefinition {
             getReply.successful = false;
         }
 
+
         response = new ExecuteReponse(getReply);
 
         return response;
@@ -80,6 +81,7 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         ExecuteReponse response = null;
         KVEntry kv = ((PUTRequest) command).getKv();
         PUTReply putReply = null;
+        System.out.println(self + ": Executing put key-" + kv.getKey() + " value-"+kv.getValue());
         if(withinPartitionSpace(kv.getKey())) {
             store.put(kv.getKey(), kv);
             putReply = new PUTReply(self, command.getSource(), kv);
