@@ -47,7 +47,6 @@ public class NodeParent extends ComponentDefinition {
 
         Component meld = create(MonarchicalEventualLeaderDetector.class, new MonarchicalEventualLeaderDetector.Init(init.replicationGroup));
         connect(node.getNegative(MELDPort.class), meld.getPositive(MELDPort.class), Channel.TWO_WAY);
-        connect(meld.getNegative(Timer.class), timer, Channel.TWO_WAY);
         connect(meld.getNegative(FDPort.class), epfd.getPositive(FDPort.class), Channel.TWO_WAY);
     }
 

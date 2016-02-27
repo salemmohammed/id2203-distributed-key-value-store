@@ -10,7 +10,9 @@ import system.client.event.GETRequest;
 import system.KVEntry;
 import system.client.event.PUTRequest;
 import system.coordination.meld.MELDPort;
+import system.coordination.meld.event.CheckLeader;
 import system.coordination.meld.event.Trust;
+import system.coordination.paxos.event.AscAbort;
 import system.coordination.paxos.event.AscDecide;
 import system.coordination.paxos.event.AscPropose;
 import system.coordination.paxos.port.ASCPort;
@@ -53,6 +55,7 @@ public class Node extends ComponentDefinition {
         subscribe(casRequestHandler, net);
 
         subscribe(ascDecideHandler, asc);
+        subscribe(ascAbortHandler, asc);
 
         subscribe(executeReponseHandler, rsm);
 
@@ -112,6 +115,15 @@ public class Node extends ComponentDefinition {
     };
 
 
+    Handler<AscAbort> ascAbortHandler = new Handler<AscAbort>() {
+        @Override
+        public void handle(AscAbort event) {
+            System.out.println(self + " " + event);
+            trigger(new CheckLeader(), meld);
+        }
+    };
+
+
     Handler<AscDecide> ascDecideHandler = new Handler<AscDecide>() {
         @Override
         public void handle(AscDecide ascDecide) {
@@ -121,7 +133,6 @@ public class Node extends ComponentDefinition {
         }
     };
 
-    Handler<>
     Handler<ExecuteReponse> executeReponseHandler = new Handler<ExecuteReponse>() {
         @Override
         public void handle(ExecuteReponse executeReponse) {

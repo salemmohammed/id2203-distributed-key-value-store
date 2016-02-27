@@ -51,7 +51,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
         this.self = init.self;
         this.replicationGroup = init.replicationGroup;
         proposedValues = new ArrayList<>();
-        readlist = new HashMap<TAddress, ReadItem>();
+        readlist = new HashMap<>();
         accepted = new HashMap<>();
         decided = new HashMap<>();
         av = new ArrayList<Object>();
@@ -74,7 +74,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
             Object proposal = event.getProposal();
             if(pts == 0) {
                 //logger.info(self + ":proposeHandler: First proposal " + event.getProposal());
-                pts = 1; //Should be assigned to unique number
+                pts = t + self.getId(); //Should be assigned to unique number
                 pv = prefix(av, al);
                 pl = 0;
                 proposedValues.add(proposal);

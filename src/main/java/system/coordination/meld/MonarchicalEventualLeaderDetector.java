@@ -3,7 +3,7 @@ package system.coordination.meld;
 import se.sics.kompics.*;
 import se.sics.kompics.timer.SchedulePeriodicTimeout;
 import se.sics.kompics.timer.Timer;
-import system.coordination.meld.event.MELDTimeout;
+import system.coordination.meld.event.CheckLeader;
 import system.coordination.meld.event.Trust;
 import system.epfd.event.Restore;
 import system.epfd.event.Suspect;
@@ -20,7 +20,6 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
     private ArrayList <TAddress> suspected;
     private TAddress leader;
     private Positive<FDPort> epfd = requires(FDPort.class);
-    Positive<Timer> timer = requires(Timer.class);
     Negative<MELDPort> meld = provides(MELDPort.class);
     private ArrayList <TAddress> replicationGroup;
 
@@ -31,21 +30,11 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
         leader = maxRank(getAliveNotSuspectedNodes());
         trigger(new Trust(leader), meld);
 
-        subscribe(startHandler, control);
         subscribe(suspectHandler, epfd);
         subscribe(restoreHandler, epfd);
-        subscribe(timeoutHandler, timer);
+        subscribe(checkLeaderHandler, meld);
     }
 
-    Handler<Start> startHandler = new Handler<Start>() {
-        @Override
-        public void handle(Start start) {
-            SchedulePeriodicTimeout spt = new SchedulePeriodicTimeout(0, 1000);
-            MELDTimeout timeout = new MELDTimeout(spt);
-            spt.setTimeoutEvent(timeout);
-            trigger(spt, timer);
-        }
-    };
 
     Handler<Suspect> suspectHandler = new Handler<Suspect>() {
         @Override
@@ -61,9 +50,9 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
         }
     };
 
-    Handler<MELDTimeout> timeoutHandler = new Handler<MELDTimeout>() {
+    Handler<CheckLeader> checkLeaderHandler = new Handler<CheckLeader>() {
         @Override
-        public void handle(MELDTimeout meldTimeout) {
+        public void handle(CheckLeader checkLeader) {
             TAddress leader = maxRank(getAliveNotSuspectedNodes());
             trigger(new Trust(leader), meld);
         }
