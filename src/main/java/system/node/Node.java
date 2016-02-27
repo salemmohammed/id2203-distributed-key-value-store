@@ -21,9 +21,6 @@ import system.coordination.rsm.event.ExecuteCommand;
 import system.coordination.rsm.event.ExecuteReponse;
 import system.coordination.rsm.port.RSMPort;
 import system.data.Bound;
-import system.port.epfd.FDPort;
-import system.epfd.event.Restore;
-import system.epfd.event.Suspect;
 import system.network.TAddress;
 import java.util.*;
 
@@ -34,6 +31,7 @@ public class Node extends ComponentDefinition {
     private ArrayList<TAddress> replicationGroup;
     private Bound bounds;
     private TAddress leader;
+    private ArrayList<Command> commandHoldbackQueue = new ArrayList<>();
 
     private final ArrayList<TAddress> neighbours;
     Positive<Network> net = requires(Network.class);
@@ -63,22 +61,20 @@ public class Node extends ComponentDefinition {
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
-                @Override
-                public void handle(Start event) {
-                    LOG.info(self.toString() + ": Start Event Triggered (Replication= " + replicationGroup+")");
+        @Override
+        public void handle(Start event) {
+            LOG.info(self.toString() + ": Start Event Triggered (Replication= " + replicationGroup+")");
         }
     };
 
     Handler<GETRequest> getRequestHandler = new Handler<GETRequest>() {
         @Override
         public void handle(GETRequest getRequest) {
-          //  System.out.println("proposing get");
+            //  System.out.println("proposing get");
             if(self.equals(leader)) {
-                System.out.println(self + "      Got get");
                 trigger(new AscPropose(getRequest), asc);
             }
             else {
-                System.out.println(self + "      Forwarding get");
                 GETRequest getRequestToLeader = new GETRequest(getRequest.getSource(), leader, getRequest.getKv());
                 trigger(getRequestToLeader, net);
             }
@@ -102,7 +98,7 @@ public class Node extends ComponentDefinition {
     Handler<CASRequest> casRequestHandler = new Handler<CASRequest>() {
         @Override
         public void handle(CASRequest casRequest) {
-           // System.out.println("proposing cas");
+            // System.out.println("proposing cas");
             if(self.equals(leader)) {
                 trigger(new AscPropose(casRequest), asc);
             }
@@ -117,6 +113,7 @@ public class Node extends ComponentDefinition {
     Handler<AscAbort> ascAbortHandler = new Handler<AscAbort>() {
         @Override
         public void handle(AscAbort event) {
+            commandHoldbackQueue.add(event.getCommand());
             System.out.println(self + " " + event);
             trigger(new CheckLeader(), meld);
         }
@@ -126,7 +123,6 @@ public class Node extends ComponentDefinition {
     Handler<AscDecide> ascDecideHandler = new Handler<AscDecide>() {
         @Override
         public void handle(AscDecide ascDecide) {
-           // System.out.println("Decided " + ascDecide.getValue());
             ExecuteCommand executeCommand = new ExecuteCommand((Command) ascDecide.getValue());
             trigger(executeCommand, rsm);
         }
@@ -144,12 +140,16 @@ public class Node extends ComponentDefinition {
     Handler<Trust> trustHandler = new Handler<Trust>() {
         @Override
         public void handle(Trust trust) {
+            System.out.println(self + " Received trust, new leader is " + trust.getLeader());
             leader = trust.getLeader();
-            if(!hold.notempty) //Send all to leader
-            System.out.println("Received trust, new leader is " + trust.getLeader());
+            for(int i = 0; i < commandHoldbackQueue.size(); i++) {
+                Command command = commandHoldbackQueue.remove(i);
+                command.setDestination(leader);
+                trigger(command, net);
+                System.out.println(self + " Forwarding HBQ-MSG " + command + " to " + command.getDestination());
+            }
         }
     };
-
 
     public static class Init extends se.sics.kompics.Init<Node> {
 

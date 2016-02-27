@@ -7,6 +7,7 @@ import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
+import system.client.event.Command;
 import system.coordination.paxos.event.*;
 import system.coordination.paxos.port.ASCPort;
 import system.network.TAddress;
@@ -46,6 +47,8 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
     Negative<ASCPort> asc = provides(ASCPort.class);
     Positive<Network> net = requires(Network.class);
 
+    private Object currentProposal;
+
     public AbortableSequenceConsensus(Init init) {
 
         this.self = init.self;
@@ -72,6 +75,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
         public void handle(AscPropose event) {
             t = t + 1;
             Object proposal = event.getProposal();
+            currentProposal = proposal;
             if(pts == 0) {
                 //logger.info(self + ":proposeHandler: First proposal " + event.getProposal());
                 pts = t + self.getId(); //Should be assigned to unique number
@@ -141,7 +145,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
             t = Integer.max(t, event.getT()) + 1;
             if(event.getTs() == pts) {
                 pts = 0;
-                trigger(new AscAbort(), asc);
+                trigger(new AscAbort((Command)currentProposal), asc);
             }
         }
     };

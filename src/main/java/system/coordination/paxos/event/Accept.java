@@ -6,9 +6,6 @@ import system.network.TMessage;
 
 import java.util.ArrayList;
 
-/**
- * Created by marcus on 23/02/16.
- */
 public class Accept extends TMessage {
     private int ts;
     private ArrayList<Object> vsuf;

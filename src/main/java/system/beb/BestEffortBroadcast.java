@@ -9,9 +9,6 @@ import system.network.TAddress;
 
 import java.util.ArrayList;
 
-/**
- * Created by Robin on 2016-02-14.
- */
 public class BestEffortBroadcast extends ComponentDefinition {
 
     private Positive<Network> net = requires(Network.class);

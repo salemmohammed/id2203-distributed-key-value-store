@@ -9,9 +9,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by Robin on 2016-02-13.
- */
 public class DatastoreFactory {
 
     static HashMap<Integer, KVEntry> [] stores = new HashMap[6];

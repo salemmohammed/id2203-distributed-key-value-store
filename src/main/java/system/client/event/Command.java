@@ -10,4 +10,7 @@ public class Command extends TMessage{
         super(source, destination, Transport.TCP);
     }
 
+    public void setDestination(TAddress destination) {
+        super.getHeader().dst = destination;
+    }
 }

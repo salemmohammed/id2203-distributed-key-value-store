@@ -11,9 +11,6 @@ import system.network.TMessage;
 
 import java.util.ArrayList;
 
-/**
- * Created by Robin on 2016-02-13.
- */
 public class ClientParent extends ComponentDefinition {
 
     Positive<Network> network = requires(Network.class);

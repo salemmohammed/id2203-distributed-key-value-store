@@ -6,25 +6,21 @@ import system.network.TMessage;
 
 import java.util.ArrayList;
 
-/**
- * Created by marcus on 23/02/16.
- */
 public class Propose extends TMessage {
 
+    private TMessage tMessage;
 
-    private TMessage c;
-
-    public Propose(TAddress source, TAddress destination,TMessage c) {
+    public Propose(TAddress source, TAddress destination,TMessage tMessage) {
         super(source, destination, Transport.TCP);
-        this.c = c;
+        this.tMessage = tMessage;
     }
 
     public TMessage getC() {
-        return c;
+        return tMessage;
     }
 
     public void setC(TMessage c) {
-        this.c = c;
+        this.tMessage = tMessage;
     }
 
 

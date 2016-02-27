@@ -7,7 +7,7 @@ import system.network.TAddress;
 public class THeader implements Header<TAddress> {
 
     public final TAddress src;
-    public final TAddress dst;
+    public TAddress dst;
     public final Transport proto;
 
     public THeader(TAddress src, TAddress dst, Transport proto) {

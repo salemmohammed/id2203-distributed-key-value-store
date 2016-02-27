@@ -2,9 +2,6 @@ package system;
 
 import java.io.Serializable;
 
-/**
- * Created by Robin on 2016-02-14.
- */
 public class KVEntry implements Serializable {
 
     private int key;

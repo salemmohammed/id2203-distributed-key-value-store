@@ -2,9 +2,6 @@ package system.coordination.paxos.event;
 
 import java.util.List;
 
-/**
- * Created by Robin on 2016-02-25.
- */
 public class ReadItem {
     private int ts;
     private List<Object> vsuf;
