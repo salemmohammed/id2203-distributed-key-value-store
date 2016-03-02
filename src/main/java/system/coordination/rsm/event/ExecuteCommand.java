@@ -1,20 +1,20 @@
 package system.coordination.rsm.event;
 
 import se.sics.kompics.KompicsEvent;
-import system.client.event.Command;
+import system.client.event.CommandMessage;
 
 public class ExecuteCommand implements KompicsEvent{
 
 
-    Command command;
+    CommandMessage commandMessage;
 
-    public ExecuteCommand(Command command) {
-        this.command = command;
+    public ExecuteCommand(CommandMessage commandMessage) {
+        this.commandMessage = commandMessage;
 
     }
 
-    public Command getCommand() {
-        return command;
+    public CommandMessage getCommandMessage() {
+        return commandMessage;
     }
 
 }

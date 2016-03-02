@@ -1,13 +1,11 @@
 package system.coordination.paxos;
 
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
-import system.client.event.Command;
+import system.client.event.CommandMessage;
 import system.coordination.paxos.event.*;
 import system.coordination.paxos.port.ASCPort;
 import system.network.TAddress;
@@ -94,6 +92,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
                 proposedValues.add(proposal);
             }
             else if(!pv.contains(proposal)) {
+
                // logger.info(self + ":proposeHandler: - pv not contains - Proposing " + proposal);
                 pv.add(proposal);
                 for (TAddress p : replicationGroup){
@@ -145,7 +144,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
             t = Integer.max(t, event.getT()) + 1;
             if(event.getTs() == pts) {
                 pts = 0;
-                trigger(new AscAbort((Command)currentProposal), asc);
+                trigger(new AscAbort((CommandMessage)currentProposal), asc);
             }
         }
     };

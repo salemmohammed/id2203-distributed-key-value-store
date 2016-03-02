@@ -3,7 +3,7 @@ package system.client.event;
 import system.KVEntry;
 import system.network.TAddress;
 
-public class CASRequest extends Command{
+public class CASRequest extends CommandMessage {
 
     private KVEntry kv;
 
@@ -11,8 +11,8 @@ public class CASRequest extends Command{
     private int newValue;
 
 
-    public CASRequest(TAddress src, TAddress dst, KVEntry kv, int newValue) {
-        super(src, dst);
+    public CASRequest(TAddress src, TAddress dst, KVEntry kv, int newValue, int pid, int seqNum) {
+        super(src, dst, pid, seqNum);
         this.newValue = newValue;
         this.kv = kv;
     }
@@ -25,5 +25,4 @@ public class CASRequest extends Command{
     public int getNewValue() {
         return newValue;
     }
-
 }

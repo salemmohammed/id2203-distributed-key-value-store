@@ -3,7 +3,7 @@ package system.client.event;
 import system.KVEntry;
 import system.network.TAddress;
 
-public class PUTReply extends Command{
+public class PUTReply extends CommandMessage {
 
     private KVEntry kv;
     public boolean successful;

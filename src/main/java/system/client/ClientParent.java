@@ -6,6 +6,7 @@ import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
+import system.client.event.CommandMessage;
 import system.network.TAddress;
 import system.network.TMessage;
 
@@ -25,9 +26,9 @@ public class ClientParent extends ComponentDefinition {
 
         private final TAddress self;
         private ArrayList<TAddress> nodes;
-        private TMessage command;
+        private CommandMessage command;
 
-        public Init(TAddress self, ArrayList<TAddress> nodes, TMessage command) {
+        public Init(TAddress self, ArrayList<TAddress> nodes, CommandMessage command) {
             this.self = self;
             this.nodes = nodes;
             this.command = command;

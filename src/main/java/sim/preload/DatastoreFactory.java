@@ -2,6 +2,7 @@ package sim.preload;
 
 import system.KVEntry;
 import system.data.Bound;
+import system.data.ReplicationGroup;
 import system.network.TAddress;
 
 import java.net.InetAddress;
@@ -17,13 +18,7 @@ public class DatastoreFactory {
     static HashMap<Integer, KVEntry> store2 = new HashMap<>();
     static HashMap<Integer, KVEntry> store3 = new HashMap<>();
 
-    static ArrayList<TAddress> replicationGroup1 = new ArrayList<>();
-    static ArrayList<TAddress> replicationGroup2 = new ArrayList<>();
-    static ArrayList<TAddress> replicationGroup3 = new ArrayList<>();
-
-    static ArrayList<TAddress> [] replicationGroups = new ArrayList[6];
-
-    static ArrayList<TAddress> neighbours = new ArrayList<>();
+    static ReplicationGroup [] replicationGroups = new ReplicationGroup[3];
 
     static Bound[] bounds = new Bound[3];
 
@@ -44,57 +39,55 @@ public class DatastoreFactory {
         stores[2] = store3;
 
         try {
-            replicationGroup1.add(new TAddress(InetAddress.getByName("192.193.0.1"), 10000));
-            replicationGroup1.add(new TAddress(InetAddress.getByName("192.193.0.2"), 10000));
-            replicationGroup1.add(new TAddress(InetAddress.getByName("192.193.0.3"), 10000));
 
-            replicationGroup2.add(new TAddress(InetAddress.getByName("192.193.0.4"), 10000));
-            replicationGroup2.add(new TAddress(InetAddress.getByName("192.193.0.5"), 10000));
-            replicationGroup2.add(new TAddress(InetAddress.getByName("192.193.0.6"), 10000));
-
-            replicationGroup3.add(new TAddress(InetAddress.getByName("192.193.0.7"), 10000));
-            replicationGroup3.add(new TAddress(InetAddress.getByName("192.193.0.8"), 10000));
-            replicationGroup3.add(new TAddress(InetAddress.getByName("192.193.0.9"), 10000));
-
-
+            ArrayList<TAddress> replicationGroup1Nodes = new ArrayList<>();
+            replicationGroup1Nodes.add(new TAddress(InetAddress.getByName("192.193.0.1"), 10000));
+            replicationGroup1Nodes.add(new TAddress(InetAddress.getByName("192.193.0.2"), 10000));
+            replicationGroup1Nodes.add(new TAddress(InetAddress.getByName("192.193.0.3"), 10000));
+            ReplicationGroup replicationGroup1 = new ReplicationGroup(bounds[0], replicationGroup1Nodes);
             replicationGroups[0] = replicationGroup1;
+
+            ArrayList<TAddress> replicationGroup2Nodes = new ArrayList<>();
+            replicationGroup2Nodes.add(new TAddress(InetAddress.getByName("192.193.0.4"), 10000));
+            replicationGroup2Nodes.add(new TAddress(InetAddress.getByName("192.193.0.5"), 10000));
+            replicationGroup2Nodes.add(new TAddress(InetAddress.getByName("192.193.0.6"), 10000));
+            ReplicationGroup replicationGroup2 = new ReplicationGroup(bounds[1], replicationGroup2Nodes);
             replicationGroups[1] = replicationGroup2;
+
+            ArrayList<TAddress> replicationGroup3Nodes = new ArrayList<>();
+            replicationGroup3Nodes.add(new TAddress(InetAddress.getByName("192.193.0.7"), 10000));
+            replicationGroup3Nodes.add(new TAddress(InetAddress.getByName("192.193.0.8"), 10000));
+            replicationGroup3Nodes.add(new TAddress(InetAddress.getByName("192.193.0.9"), 10000));
+            ReplicationGroup replicationGroup3 = new ReplicationGroup(bounds[2], replicationGroup3Nodes);
             replicationGroups[2] = replicationGroup3;
-
-            neighbours.add(new TAddress(InetAddress.getByName("192.193.0.1"), 10000));
-            neighbours.add(new TAddress(InetAddress.getByName("192.193.0.2"), 10000));
-            neighbours.add(new TAddress(InetAddress.getByName("192.193.0.3"), 10000));
-            neighbours.add(new TAddress(InetAddress.getByName("192.193.0.4"), 10000));
-            neighbours.add(new TAddress(InetAddress.getByName("192.193.0.5"), 10000));
-            neighbours.add(new TAddress(InetAddress.getByName("192.193.0.6"), 10000));
-            neighbours.add(new TAddress(InetAddress.getByName("192.193.0.7"), 10000));
-            neighbours.add(new TAddress(InetAddress.getByName("192.193.0.8"), 10000));
-            neighbours.add(new TAddress(InetAddress.getByName("192.193.0.9"), 10000));
-
         }
         catch(UnknownHostException uhe) {
             uhe.printStackTrace();
         }
-
-
-
     }
 
-    public static ArrayList<TAddress> getNeighbours() {
-        return neighbours;
+    public static ReplicationGroup getReplicationGroupByIpSuffix(int suffix) {
+        System.out.println("suffix " + suffix);
+        System.out.println("arrayid " + arrayId(suffix));
+        return replicationGroups[arrayId(suffix)];
     }
 
-    public static ArrayList<TAddress> getReplicationGroupByIpSuffix(int suffix) {
-        return (ArrayList<TAddress>) replicationGroups[arrayId(suffix)].clone();
 
-    }
 
     public static HashMap<Integer, KVEntry> getHashMapByIpSuffix(int suffix) {
         return (HashMap<Integer, KVEntry>)stores[arrayId(suffix)].clone();
     }
 
-    public static TAddress getReplicationGroupLeader(int addressSufix) {
-        return getReplicationGroupByIpSuffix(addressSufix).get(0);
+    public static TAddress getReplicationGroupLeader(int suffix) {
+        return getReplicationGroupByIpSuffix(suffix).getNodes().get(0);
+    }
+
+    public static ArrayList<ReplicationGroup> getReplicationGroups() {
+        ArrayList<ReplicationGroup> replicationGroupList = new ArrayList<>();
+        for(int i = 0; i < replicationGroups.length; i++) {
+            replicationGroupList.add(replicationGroups[i]);
+        }
+        return replicationGroupList;
     }
 
 

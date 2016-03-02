@@ -3,7 +3,7 @@ package system.client.event;
 import system.KVEntry;
 import system.network.TAddress;
 
-public class CASReply extends Command{
+public class CASReply extends CommandMessage {
 
     private KVEntry kv;
     private int oldValue;

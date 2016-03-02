@@ -1,19 +1,20 @@
 package system.coordination.paxos.event;
 
 import se.sics.kompics.KompicsEvent;
+import system.client.event.CommandMessage;
 
 public class AscPropose implements KompicsEvent {
-    private Object proposal;
+    private CommandMessage proposal;
 
-    public AscPropose(Object proposal) {
+    public AscPropose(CommandMessage proposal) {
         this.proposal = proposal;
     }
 
-    public Object getProposal() {
+    public CommandMessage getProposal() {
         return proposal;
     }
 
-    public void setProposal(Object proposal) {
+    public void setProposal(CommandMessage proposal) {
         this.proposal = proposal;
     }
 }

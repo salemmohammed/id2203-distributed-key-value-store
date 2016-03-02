@@ -4,11 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
-import system.client.event.CASReply;
-import system.client.event.GETReply;
-import system.client.event.GETRequest;
+import system.client.event.*;
 import system.KVEntry;
-import system.client.event.PUTReply;
 import system.network.TAddress;
 import system.network.TMessage;
 
@@ -21,12 +18,14 @@ public class Client extends ComponentDefinition {
     Positive<Network> net = requires(Network.class);
     private final ArrayList<TAddress> nodes;
     private final TAddress self;
-    private TMessage command;
+    private int seqNum;
+    private CommandMessage command;
 
     public Client(Init init) {
         self = init.self;
         nodes = init.nodes;
         command = init.command;
+        seqNum = 0;
 
         subscribe(startHandler, control);
         subscribe(getReplyHandler, net);
@@ -37,22 +36,24 @@ public class Client extends ComponentDefinition {
     Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start event) {
-                trigger((command), net);
-            System.out.println("\n" + self + " Sent " + command + " to " + command.getDestination());
+            command.setSeqNum(seqNum);
+            seqNum++;
+            trigger(command, net);
+            System.out.println("\nCLIENT:" + self + " Sent " + command + " to " + command.getDestination());
         }
     };
 
     Handler<GETReply> getReplyHandler = new Handler<GETReply>() {
         @Override
         public void handle(GETReply getReply) {
-            System.out.println(self + ": Received GETREPLY key-" + getReply.getKVEntry().getKey() + " value-" +getReply.getKVEntry().getValue());
+            System.out.println("CLIENT:" + self + ": Received GETREPLY key-" + getReply.getKVEntry().getKey() + " value-" +getReply.getKVEntry().getValue());
         }
     };
 
     Handler<PUTReply> putReplyHandler = new Handler<PUTReply>() {
         @Override
         public void handle(PUTReply putReply) {
-            System.out.println(self +  ": Received PUTREPLY: key-" + putReply.getKv().getKey() + " value-"+putReply.getKv().getValue() + " success-" + putReply.successful);
+            System.out.println("CLIENT:" + self + ": Received PUTREPLY: key-" + putReply.getKv().getKey() + " value-"+putReply.getKv().getValue() + " success-" + putReply.successful);
         }
     };
 
@@ -60,10 +61,10 @@ public class Client extends ComponentDefinition {
         @Override
         public void handle(CASReply casReply) {
             if(casReply.successful) {
-                System.out.println(self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getOldValue() + " newValue-"+casReply.getKVEntry().getValue());
+                System.out.println("CLIENT:" + self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getOldValue() + " newValue-"+casReply.getKVEntry().getValue() + " success-" + casReply.successful);
             }
             else {
-                System.out.println(self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getKVEntry().getValue() + " newValue-" + casReply.getOldValue());
+                System.out.println("CLIENT:" + self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getKVEntry().getValue() + " newValue-" + casReply.getOldValue() + " success-" + casReply.successful);
             }
         }
     };
@@ -72,9 +73,9 @@ public class Client extends ComponentDefinition {
 
         public final ArrayList<TAddress> nodes;
         public TAddress self;
-        private TMessage command;
+        private CommandMessage command;
 
-        public Init(TAddress self, ArrayList<TAddress> nodes, TMessage command) {
+        public Init(TAddress self, ArrayList<TAddress> nodes, CommandMessage command) {
             this.self = self;
             this.nodes = nodes;
             this.command = command;

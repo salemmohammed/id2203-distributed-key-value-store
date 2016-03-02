@@ -34,8 +34,10 @@ public class BestEffortBroadcast extends ComponentDefinition {
     private Handler<BebBroadcastRequest> broadcastHandler = new Handler<BebBroadcastRequest>() {
         @Override
         public void handle(BebBroadcastRequest event) {
+            System.out.println("Received bebcast request");
             ArrayList <TAddress> nodes = event.getBroadcastNodes();
             for (TAddress node : nodes) {
+                System.out.println(self + " Sending bebcast to " + node);
                 BebDataMessage msg = new BebDataMessage(self,node, event.getDeliverEvent());
                 trigger(msg, net);
             }
@@ -46,6 +48,7 @@ public class BestEffortBroadcast extends ComponentDefinition {
     private Handler<BebDataMessage> deliverHandler = new Handler<BebDataMessage>() {
         @Override
         public void handle(BebDataMessage event) {
+            System.out.println(self + " received " + event.getData() + " from " + event.getSource());
             //logger.info("Node {} received delivery event", self);
             trigger(event.getData(), beb);
         }

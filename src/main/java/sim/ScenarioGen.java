@@ -9,9 +9,11 @@ import sim.preload.DatastoreFactory;
 import system.KVEntry;
 import system.client.ClientParent;
 import system.client.event.CASRequest;
+import system.client.event.CommandMessage;
 import system.client.event.GETRequest;
 import system.client.event.PUTRequest;
 import system.data.Bound;
+import system.data.ReplicationGroup;
 import system.network.TMessage;
 import system.node.NodeParent;
 import system.network.TAddress;
@@ -38,9 +40,9 @@ public class ScenarioGen {
         public StartNodeEvent generate(final Integer self) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
-                ArrayList<TAddress> neighbours = new ArrayList<>();
+                ArrayList<ReplicationGroup> replicationGroups = new ArrayList<>();
                 HashMap <Integer, KVEntry> store = new HashMap<>();
-                ArrayList<TAddress> replicationGroup;
+                ReplicationGroup replicationGroup;
                 TAddress leader;
                 Bound bound;
                 {
@@ -48,8 +50,10 @@ public class ScenarioGen {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
                         store = datastoreFactory.getHashMapByIpSuffix(self);
                         replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
-                        neighbours = datastoreFactory.getNeighbours();
+                        replicationGroups = datastoreFactory.getReplicationGroups();
+                        System.out.println(selfAdr + ": groupsize " + replicationGroups.size());
                         leader = datastoreFactory.getReplicationGroupLeader(self);
+                        System.out.println(self + " my leader is " + leader);
                         bound = datastoreFactory.getBoundsByIpSuffix(self);
 
                     } catch (UnknownHostException ex) {
@@ -69,7 +73,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, neighbours, store, replicationGroup, leader, bound);
+                    return new NodeParent.Init(selfAdr, replicationGroups, store, replicationGroup, leader);
                 }
             };
         }
@@ -80,9 +84,9 @@ public class ScenarioGen {
         public StartNodeEvent generate(final Integer self) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
-                ArrayList<TAddress> neighbours = new ArrayList<>();
+                ArrayList<ReplicationGroup> replicationGroups;
                 HashMap <Integer, KVEntry> store = new HashMap<>();
-                ArrayList<TAddress> replicationGroup;
+                ReplicationGroup replicationGroup;
                 TAddress leader;
                 Bound bound;
                 {
@@ -90,7 +94,7 @@ public class ScenarioGen {
                         selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
                         store = datastoreFactory.getHashMapByIpSuffix(self);
                         replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
-                        neighbours = datastoreFactory.getNeighbours();
+                        replicationGroups = datastoreFactory.getReplicationGroups();
                         leader = selfAdr;
                         bound = datastoreFactory.getBoundsByIpSuffix(self);
 
@@ -111,7 +115,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, neighbours, store, replicationGroup, leader, bound);
+                    return new NodeParent.Init(selfAdr, replicationGroups, store, replicationGroup, leader);
                 }
             };
         }
@@ -123,7 +127,7 @@ public class ScenarioGen {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
-                TMessage command;
+                CommandMessage command;
                 {
                     try {
                         //Client is started on ip ending with 100
@@ -133,7 +137,7 @@ public class ScenarioGen {
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), 10000));
                         this.nodes = nodes;
                         KVEntry kv = new KVEntry(5,-1,0);
-                        this.command = new GETRequest(selfAdr, nodes.get(0), kv);
+                        this.command = new GETRequest(selfAdr, nodes.get(0), kv, selfAdr.getId(), 0);
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -162,7 +166,7 @@ public class ScenarioGen {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
-                TMessage command;
+                CommandMessage command;
                 {
                     try {
                         //Client is started on ip ending with 100
@@ -171,7 +175,7 @@ public class ScenarioGen {
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), 10000));
                         KVEntry kv = new KVEntry(5,100,0);
-                        this.command = new PUTRequest(selfAdr, nodes.get(0), kv);
+                        this.command = new PUTRequest(selfAdr, nodes.get(0), kv, selfAdr.getId(), 0);
                         this.nodes = nodes;
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
@@ -201,7 +205,7 @@ public class ScenarioGen {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
-                TMessage command;
+                CommandMessage command;
                 {
                     try {
                         //Client is started on ip ending with 100
@@ -210,7 +214,7 @@ public class ScenarioGen {
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), 10000));
                         KVEntry kv = new KVEntry(5,100,0);
-                        this.command = new CASRequest(selfAdr, nodes.get(0), kv, 30);
+                        this.command = new CASRequest(selfAdr, nodes.get(0), kv, 30, selfAdr.getId(), 0);
                         this.nodes = nodes;
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
@@ -258,104 +262,6 @@ public class ScenarioGen {
     };
 
 
-    public static SimulationScenario testGETOperation() {
-        SimulationScenario getOperationScenario = new SimulationScenario() {
-            {
-                //Start three nodes holding even values
-                StochasticProcess nodeGroupProcess = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(0));
-                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
-                    }
-                };
-
-                //Start client that gets a value
-                StochasticProcess getClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(0));
-                        raise(1, startGETClient, new BasicIntSequentialDistribution(2), new BasicIntSequentialDistribution(3));
-                    }
-                };
-
-                nodeGroupProcess.start();
-                getClient.start();
-
-                terminateAfterTerminationOf(1000, getClient);
-            }
-        };
-
-        return getOperationScenario;
-    }
-
-    public static SimulationScenario testAllOperations() {
-        SimulationScenario putOperationScenario = new SimulationScenario() {
-            {
-                //Start three nodes holding even values
-                StochasticProcess nodeGroupProcess = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(0));
-                        raise(3, nodeGroup, new BasicIntSequentialDistribution(1));
-                    }
-                };
-
-                //Start client that gets a value
-                StochasticProcess putClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(3));
-                    }
-                };
-
-                StochasticProcess casClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(1000));
-                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new BasicIntSequentialDistribution(3));
-                    }
-                };
-
-                StochasticProcess getClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(1, startGETClient, new BasicIntSequentialDistribution(12), new BasicIntSequentialDistribution(3));
-                    }
-                };
-
-                StochasticProcess getClient2 = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(1, startGETClient, new BasicIntSequentialDistribution(15), new BasicIntSequentialDistribution(3));
-                    }
-                };
-
-                StochasticProcess killreplicationNode1 = new StochasticProcess() {
-                    {
-                        raise(1, killNode, new BasicIntSequentialDistribution(1));
-                    }
-                };
-
-                /*
-                StochasticProcess killreplicationNode3 = new StochasticProcess() {
-                    {
-                        raise(1, killNode, new BasicIntSequentialDistribution(3));
-                    }
-                };
-                */
-
-                nodeGroupProcess.start();
-                putClient.start();
-                getClient.startAfterTerminationOf(5000, putClient);
-                killreplicationNode1.startAfterTerminationOf(5000, getClient);
-                casClient.startAfterTerminationOf(5000, killreplicationNode1);
-                //killreplicationNode3.startAfterTerminationOf(5000, casClient);
-                getClient2.startAfterTerminationOf(2000, casClient);
-
-
-            }
-        };
-
-        return putOperationScenario;
-    }
-
 
     public static SimulationScenario testAllOperationsAllLeaders() {
         SimulationScenario allOperationAllLeader = new SimulationScenario() {
@@ -364,7 +270,7 @@ public class ScenarioGen {
                 StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(3, allLeaderGroup, new BasicIntSequentialDistribution(1));
+                        raise(9, allLeaderGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 
@@ -433,7 +339,83 @@ public class ScenarioGen {
         return allOperationAllLeader;
     }
 
-    public static SimulationScenario testFailureDetection() {
+    public static SimulationScenario testAllOperationsOneLeader() {
+        SimulationScenario allOperationOneLeader = new SimulationScenario() {
+            {
+                //Start three nodes holding even values
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                //Start client that gets a value
+                StochasticProcess putClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(3));
+                    }
+                };
+
+                StochasticProcess casClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(1000));
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+                StochasticProcess getClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(12), new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess getClient2 = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(15), new ConstantDistribution<Integer>(Integer.class, 8));
+                    }
+                };
+
+                StochasticProcess getClient3 = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(3, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 3));
+                    }
+                };
+
+                StochasticProcess killreplicationNode1 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(7));
+                    }
+                };
+
+                /*
+                StochasticProcess killreplicationNode3 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(3));
+                    }
+                };
+                */
+
+                nodeGroupProcess.start();
+                putClient.start();
+                getClient.startAfterTerminationOf(5000, putClient);
+                casClient.startAfterTerminationOf(5000, getClient);
+                //killreplicationNode3.startAfterTerminationOf(5000, casClient);
+                getClient2.startAfterTerminationOf(2000, casClient);
+                killreplicationNode1.startAfterTerminationOf(2000, getClient2);
+                getClient3.startAfterTerminationOf(2000, killreplicationNode1);
+
+            }
+        };
+
+        return allOperationOneLeader;
+    }
+
+    public static SimulationScenario testFailureDetectionAndLeaderElection() {
         SimulationScenario failureDetectionScenario = new SimulationScenario() {
             {
 
@@ -441,12 +423,12 @@ public class ScenarioGen {
                 StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(3, nodeGroup, new BasicIntSequentialDistribution(1));
+                        raise(6, nodeGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 
                 //Kill node in even group with ip ending with 2
-                StochasticProcess killNodeProcess = new StochasticProcess() {
+                StochasticProcess killNode2 = new StochasticProcess() {
                     {
                         raise(1, killNode, new BasicIntSequentialDistribution(2));
                     }
@@ -454,7 +436,21 @@ public class ScenarioGen {
 
 
                 //Restart node in even group with ip ending with 2
-                StochasticProcess restartNode = new StochasticProcess() {
+                StochasticProcess restartNode2 = new StochasticProcess() {
+                    {
+                        raise(1, nodeGroup, new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+                StochasticProcess killNode1 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+
+                //Restart node in even group with ip ending with 2
+                StochasticProcess restartNode1 = new StochasticProcess() {
                     {
                         raise(1, nodeGroup, new BasicIntSequentialDistribution(2));
                     }
@@ -462,9 +458,11 @@ public class ScenarioGen {
 
 
                 nodeGroupProcess.start();
-                killNodeProcess.startAfterStartOf(500, nodeGroupProcess);
-                restartNode.startAfterStartOf(500, killNodeProcess);
-                terminateAfterTerminationOf(10000, restartNode);
+                killNode1.startAfterTerminationOf(500, nodeGroupProcess);
+                restartNode1.startAfterTerminationOf(500, killNode1);
+                killNode2.startAfterTerminationOf(500, restartNode1);
+                restartNode2.startAfterTerminationOf(500, killNode2);
+                terminateAfterTerminationOf(10000, restartNode2);
             }
         };
 

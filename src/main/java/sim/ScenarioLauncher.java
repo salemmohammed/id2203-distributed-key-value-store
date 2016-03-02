@@ -7,7 +7,9 @@ public class ScenarioLauncher {
     public static void main(String[] args) {
         long seed = 123;
         SimulationScenario.setSeed(seed);
-        SimulationScenario simpleBootScenario = ScenarioGen.testAllOperationsAllLeaders();
-        simpleBootScenario.simulate(LauncherComp.class);
+        SimulationScenario failureDetectionAndLeaderElection = ScenarioGen.testFailureDetectionAndLeaderElection();
+        SimulationScenario allLeaderAllOperationsASC = ScenarioGen.testAllOperationsAllLeaders();
+        SimulationScenario oneLeaderAllOperationsASC = ScenarioGen.testAllOperationsOneLeader();
+        oneLeaderAllOperationsASC.simulate(LauncherComp.class);
     }
 }

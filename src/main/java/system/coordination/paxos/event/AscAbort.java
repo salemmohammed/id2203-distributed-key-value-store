@@ -1,16 +1,16 @@
 package system.coordination.paxos.event;
 
 import se.sics.kompics.KompicsEvent;
-import system.client.event.Command;
+import system.client.event.CommandMessage;
 
 public class AscAbort implements KompicsEvent {
-    private Command command;
+    private CommandMessage commandMessage;
 
-    public AscAbort(Command command) {
-        this.command = command;
+    public AscAbort(CommandMessage commandMessage) {
+        this.commandMessage = commandMessage;
     }
 
-    public Command getCommand() {
-        return this.command;
+    public CommandMessage getCommandMessage() {
+        return this.commandMessage;
     }
 }

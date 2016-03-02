@@ -31,25 +31,20 @@ public class ReplicatedStateMachine extends ComponentDefinition {
     Handler<ExecuteCommand> executeHandler = new Handler<ExecuteCommand>() {
         @Override
         public void handle(ExecuteCommand event) {
-            System.out.println(self + "  " + store.toString());
-
-            Command command = event.getCommand();
+            CommandMessage commandMessage = event.getCommandMessage();
 
             ExecuteReponse response = null;
 
-            if(command instanceof GETRequest) {
-                response = executeGet(command);
-                //System.out.println("Received get");
+            if(commandMessage instanceof GETRequest) {
+                response = executeGet(commandMessage);
             }
 
-            if(command instanceof PUTRequest) {
-                response = executePut(command);
-                //System.out.println("Received put");
+            if(commandMessage instanceof PUTRequest) {
+                response = executePut(commandMessage);
             }
 
-            if(command instanceof CASRequest) {
-                response = executeCas(command);
-                //System.out.println("Received cas");
+            if(commandMessage instanceof CASRequest) {
+                response = executeCas(commandMessage);
             }
             trigger(response, rsm);
         }
@@ -57,17 +52,17 @@ public class ReplicatedStateMachine extends ComponentDefinition {
 
 
 
-    private ExecuteReponse executeGet(Command command) {
+    private ExecuteReponse executeGet(CommandMessage commandMessage) {
         ExecuteReponse response = null;
-        KVEntry kv = ((GETRequest) command).getKv();
+        KVEntry kv = ((GETRequest) commandMessage).getKv();
         kv = store.get(kv.getKey());
 
         GETReply getReply = null;
         if(kv != null) {
-            getReply = new GETReply(self, command.getSource(), kv);
+            getReply = new GETReply(self, commandMessage.getSource(), kv);
             getReply.successful = true;
         } else {
-            getReply = new GETReply(self, command.getSource(), null);
+            getReply = new GETReply(self, commandMessage.getSource(), null);
             getReply.successful = false;
         }
 
@@ -77,17 +72,16 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         return response;
     }
 
-    private ExecuteReponse executePut(Command command) {
+    private ExecuteReponse executePut(CommandMessage commandMessage) {
         ExecuteReponse response = null;
-        KVEntry kv = ((PUTRequest) command).getKv();
+        KVEntry kv = ((PUTRequest) commandMessage).getKv();
         PUTReply putReply = null;
-        System.out.println(self + ": Executing put key-" + kv.getKey() + " value-"+kv.getValue());
         if(withinPartitionSpace(kv.getKey())) {
             store.put(kv.getKey(), kv);
-            putReply = new PUTReply(self, command.getSource(), kv);
+            putReply = new PUTReply(self, commandMessage.getSource(), kv);
             putReply.successful = true;
         } else {
-            putReply = new PUTReply(self, command.getSource(), null);
+            putReply = new PUTReply(self, commandMessage.getSource(), null);
             putReply.successful = false;
         }
         response = new ExecuteReponse(putReply);
@@ -95,24 +89,24 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         return response;
     }
 
-    private ExecuteReponse executeCas(Command command) {
+    private ExecuteReponse executeCas(CommandMessage commandMessage) {
         ExecuteReponse response = null;
         CASReply casReply = null;
-        KVEntry kv = ((CASRequest) command).getKVEntry();
+        KVEntry kv = ((CASRequest) commandMessage).getKVEntry();
         if(withinPartitionSpace(kv.getKey())) {
             int storeValue = store.get(kv.getKey()).getValue();
             if(storeValue == kv.getValue()) {
-                kv = new KVEntry(kv.getKey(), ((CASRequest) command).getNewValue(), 0);
+                kv = new KVEntry(kv.getKey(), ((CASRequest) commandMessage).getNewValue(), 0);
                 store.put(kv.getKey(), kv);
-                casReply = new CASReply(self, command.getSource(), kv, storeValue);
+                casReply = new CASReply(self, commandMessage.getSource(), kv, storeValue);
                 casReply.successful = true;
             } else {
-                casReply = new CASReply(self, command.getSource(), kv, -1);
+                casReply = new CASReply(self, commandMessage.getSource(), kv, -1);
                 casReply.successful = false;
             }
         }
         else {
-            casReply = new CASReply(self, command.getSource(), kv, -1);
+            casReply = new CASReply(self, commandMessage.getSource(), kv, -1);
             casReply.successful = false;
         }
         response = new ExecuteReponse(casReply);
