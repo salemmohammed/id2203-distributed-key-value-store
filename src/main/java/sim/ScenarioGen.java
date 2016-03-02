@@ -354,7 +354,7 @@ public class ScenarioGen {
                 StochasticProcess putClient = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(3));
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(5));
                     }
                 };
 
