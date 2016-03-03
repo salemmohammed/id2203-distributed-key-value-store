@@ -11,6 +11,7 @@ public class ScenarioLauncher {
         SimulationScenario allLeaderAllOperationsASC = ScenarioGen.testAllOperationsAllLeaders();
         SimulationScenario oneLeaderAllOperationsASC = ScenarioGen.testAllOperationsOneLeader();
         SimulationScenario bestEffortBroadcastScenario = ScenarioGen.testBestEffortBroadcastProperties();
-        monarchicalEventualLeaderDetectorScenario.simulate(LauncherComp.class);
+        bestEffortBroadcastScenario.simulate(LauncherComp.class);
+        //monarchicalEventualLeaderDetectorScenario.simulate(LauncherComp.class);
     }
 }
