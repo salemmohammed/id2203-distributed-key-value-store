@@ -7,9 +7,10 @@ public class ScenarioLauncher {
     public static void main(String[] args) {
         long seed = 123;
         SimulationScenario.setSeed(seed);
-        SimulationScenario failureDetectionAndLeaderElection = ScenarioGen.testFailureDetectionAndLeaderElection();
+        SimulationScenario monarchicalEventualLeaderDetectorScenario = ScenarioGen.testMonarchicalEventualLeaderDetectorProperties();
         SimulationScenario allLeaderAllOperationsASC = ScenarioGen.testAllOperationsAllLeaders();
         SimulationScenario oneLeaderAllOperationsASC = ScenarioGen.testAllOperationsOneLeader();
-        oneLeaderAllOperationsASC.simulate(LauncherComp.class);
+        SimulationScenario bestEffortBroadcastScenario = ScenarioGen.testBestEffortBroadcastProperties();
+        monarchicalEventualLeaderDetectorScenario.simulate(LauncherComp.class);
     }
 }

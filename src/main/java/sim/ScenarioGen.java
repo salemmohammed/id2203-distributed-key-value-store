@@ -430,15 +430,31 @@ public class ScenarioGen {
         return allOperationOneLeader;
     }
 
-    public static SimulationScenario testFailureDetectionAndLeaderElection() {
-        SimulationScenario failureDetectionScenario = new SimulationScenario() {
+
+
+    /*
+    -- Simulation scenario to test Monarchical-Eventual-Leader-Detector component --
+    Properties:
+    EPFD1: Strong completeness: Eventually, every process that crashes is permanently suspected by every correct process.
+    EPFD2: Eventual strong accuracy: Eventually, no correct process is suspected by any correct process.
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. After the nodes have been started a client sends a get request to a node in the wrong replication group.
+    3. The receiving node forwards the get request to the responsible replication group using Best-Effort Broadcast.
+    4. In the printouts we can see that each node in the group receives the broadcast according to BEB1, BEB2 and BEB3.
+    5. The scenario then continues by killing a node in the responsible replication group.
+    6. After having killed the node a second client sends a get request which is received by the two correct processes.
+     */
+    public static SimulationScenario testMonarchicalEventualLeaderDetectorProperties() {
+        SimulationScenario testLeaderElection = new SimulationScenario() {
             {
 
                 //Start three nodes holding even values
                 StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
-                        raise(6, nodeGroup, new BasicIntSequentialDistribution(1));
+                        raise(3, nodeGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 
@@ -459,7 +475,7 @@ public class ScenarioGen {
 
                 StochasticProcess killNode1 = new StochasticProcess() {
                     {
-                        raise(1, killNode, new BasicIntSequentialDistribution(2));
+                        raise(1, killNode, new BasicIntSequentialDistribution(1));
                     }
                 };
 
@@ -467,20 +483,76 @@ public class ScenarioGen {
                 //Restart node in even group with ip ending with 2
                 StochasticProcess restartNode1 = new StochasticProcess() {
                     {
-                        raise(1, nodeGroup, new BasicIntSequentialDistribution(2));
+                        raise(1, nodeGroup, new BasicIntSequentialDistribution(1));
                     }
                 };
 
-
                 nodeGroupProcess.start();
-                killNode1.startAfterTerminationOf(500, nodeGroupProcess);
-                restartNode1.startAfterTerminationOf(500, killNode1);
-                killNode2.startAfterTerminationOf(500, restartNode1);
-                restartNode2.startAfterTerminationOf(500, killNode2);
-                terminateAfterTerminationOf(10000, restartNode2);
+                killNode1.startAfterTerminationOf(200, nodeGroupProcess);
+                killNode2.startAfterTerminationOf(200, killNode1);
+                restartNode2.startAfterTerminationOf(200, killNode2);
+                restartNode1.startAfterTerminationOf(200, restartNode2);
+                terminateAfterTerminationOf(100, restartNode1);
             }
         };
 
-        return failureDetectionScenario;
+        return testLeaderElection;
+    }
+
+
+    /*
+    -- Simulation scenario to test Best-Effort Broadcast component --
+    Properties:
+    BEB1: Validity: If a correct process broadcasts a message m, then every correct process eventually delivers m.
+    BEB2: No duplication: No message is delivered more than once.
+    BEB3: No creation: If a process delivers a message m with sender s, then m was previously broadcast by process s.
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. After the nodes have been started a client sends a get request to a node in the wrong replication group.
+    3. The receiving node forwards the get request to the responsible replication group using Best-Effort Broadcast.
+    4. In the printouts we can see that each node in the group receives the broadcast according to BEB1, BEB2 and BEB3.
+    5. The scenario then continues by killing a node in the responsible replication group.
+    6. After having killed the node a second client sends a get request which is received by the two correct processes.
+     */
+    public static SimulationScenario testBestEffortBroadcastProperties() {
+        SimulationScenario bestEffortBroadcastScenario = new SimulationScenario() {
+            {
+
+                //Start three nodes holding even values
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess killNode2 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+                StochasticProcess getClient1 = new StochasticProcess() {
+                    {
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 8));
+                    }
+                };
+
+                StochasticProcess getClient2 = new StochasticProcess() {
+                    {
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 8));
+                    }
+                };
+
+                nodeGroupProcess.start();
+                getClient1.startAfterTerminationOf(100, nodeGroupProcess);
+                killNode2.startAfterTerminationOf(100, getClient1);
+                getClient2.startAfterTerminationOf(100, killNode2);
+                terminateAfterTerminationOf(100, getClient2);
+            }
+        };
+
+        return bestEffortBroadcastScenario;
     }
 }
