@@ -540,7 +540,7 @@ public class ScenarioGen {
 
                 StochasticProcess getClient2 = new StochasticProcess() {
                     {
-                        raise(1, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 8));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(31), new ConstantDistribution<Integer>(Integer.class, 8));
                     }
                 };
 
