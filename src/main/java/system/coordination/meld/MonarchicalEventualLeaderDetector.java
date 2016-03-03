@@ -50,6 +50,12 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
         @Override
         public void handle(Restore restore) {
             suspected.remove(restore.getNode());
+            TAddress bestFitLeader = maxRank(getAliveNotSuspectedNodes());
+            if(!leader.equals(bestFitLeader)) {
+                leader = bestFitLeader;
+                trigger(new Trust(leader), meld);
+            }
+
         }
     };
 
