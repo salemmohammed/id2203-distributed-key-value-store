@@ -50,7 +50,6 @@ public class ScenarioGen {
                         store = datastoreFactory.getHashMapByIpSuffix(self);
                         replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
                         replicationGroups = datastoreFactory.getReplicationGroups();
-                        System.out.println(selfAdr + ": groupsize " + replicationGroups.size());
                         leader = datastoreFactory.getReplicationGroupLeader(self);
                         System.out.println(self + " my leader is " + leader);
                         bound = datastoreFactory.getBoundsByIpSuffix(self);

@@ -67,8 +67,6 @@ public class DatastoreFactory {
     }
 
     public static ReplicationGroup getReplicationGroupByIpSuffix(int suffix) {
-        System.out.println("suffix " + suffix);
-        System.out.println("arrayid " + arrayId(suffix));
         return replicationGroups[arrayId(suffix)];
     }
 

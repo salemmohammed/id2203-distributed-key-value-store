@@ -89,15 +89,17 @@ public class Node extends ComponentDefinition {
     };
 
     private void forwardToCorrectReplicationGroup(Integer key, CommandMessage commandMessage) {
-        System.out.println("forwarding to correct group, group size " + replicationGroups.size());
         commandMessage.setPid(self.getId());
         commandMessage.setSeqNum(seqNum);
         seqNum++;
+        int i = 0;
         for(ReplicationGroup replicationGroup : replicationGroups) {
             if(replicationGroup.withinPartitionSpace(key)) {
+                System.out.println(commandMessage.getDestination() + " Forwarding to correct group: group " + i);
                 BebDeliver bebDeliver = new BebDeliver(commandMessage.getSource(), commandMessage);
                 trigger(new BebBroadcastRequest(bebDeliver, replicationGroup.getNodes()), beb);
             }
+            i++;
         }
     }
 
@@ -170,17 +172,19 @@ public class Node extends ComponentDefinition {
     Handler<AscDecide> ascDecideHandler = new Handler<AscDecide>() {
         @Override
         public void handle(AscDecide ascDecide) {
-            ExecuteCommand executeCommand = new ExecuteCommand((CommandMessage) ascDecide.getValue());
-            System.out.println("decided " + executeCommand.getCommandMessage().getDestination());
+            CommandMessage commandMessage = (CommandMessage) ascDecide.getValue();
+            ExecuteCommand executeCommand = new ExecuteCommand(commandMessage);
+
             trigger(executeCommand, rsm);
         }
     };
+
 
     Handler<ExecuteReponse> executeReponseHandler = new Handler<ExecuteReponse>() {
         @Override
         public void handle(ExecuteReponse executeReponse) {
             if(self.equals(leader)) {
-                System.out.println(self + " sending response to " + executeReponse.getCommandMessage().getDestination());
+                System.out.println(self + " Sending response to " + executeReponse.getCommandMessage().getDestination());
                 trigger(executeReponse.getCommandMessage(), net);
             }
         }

@@ -56,6 +56,9 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         ExecuteReponse response = null;
         KVEntry kv = ((GETRequest) commandMessage).getKv();
         kv = store.get(kv.getKey());
+        System.out.println(self + " Decided and executing: GET:" + "key= " + kv.getKey());
+
+
 
         GETReply getReply = null;
         if(kv != null) {
@@ -78,6 +81,7 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         PUTReply putReply = null;
         if(withinPartitionSpace(kv.getKey())) {
             store.put(kv.getKey(), kv);
+            System.out.println(self + " Decided and executing: PUT:" + "key= " + kv.getKey() + ", value= " + kv.getValue());
             putReply = new PUTReply(self, commandMessage.getSource(), kv);
             putReply.successful = true;
         } else {
@@ -85,6 +89,7 @@ public class ReplicatedStateMachine extends ComponentDefinition {
             putReply.successful = false;
         }
         response = new ExecuteReponse(putReply);
+
 
         return response;
     }
@@ -97,6 +102,7 @@ public class ReplicatedStateMachine extends ComponentDefinition {
             int storeValue = store.get(kv.getKey()).getValue();
             if(storeValue == kv.getValue()) {
                 kv = new KVEntry(kv.getKey(), ((CASRequest) commandMessage).getNewValue(), 0);
+                System.out.println(self + " Decided and executing: CAS:" + "key= " + kv.getKey() + ", value= " + kv.getValue());
                 store.put(kv.getKey(), kv);
                 casReply = new CASReply(self, commandMessage.getSource(), kv, storeValue);
                 casReply.successful = true;

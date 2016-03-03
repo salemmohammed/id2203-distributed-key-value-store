@@ -1,6 +1,7 @@
 package system.client.event;
 
 import se.sics.kompics.network.Transport;
+import system.data.KVEntry;
 import system.network.TAddress;
 import system.network.TMessage;
 
@@ -27,9 +28,7 @@ public class CommandMessage extends TMessage implements Serializable{
 
     public boolean equals(Object obj) {
         CommandMessage command = (CommandMessage)obj;
-        System.out.println("Calling equals: obj.command pid-" + command.getPid() + " obj.command seq-" + command.getSeqNum()  + " this pid-" + pid + " this seq-" + seqNum);
         if(this.getPid() == command.getPid() && this.getSeqNum() == command.getSeqNum()) {
-            System.out.println("true");
             return true;
         }
         return false;
@@ -50,4 +49,5 @@ public class CommandMessage extends TMessage implements Serializable{
     public void setSeqNum(int seqNum) {
         this.seqNum = seqNum;
     }
+
 }
