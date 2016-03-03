@@ -4,7 +4,9 @@ import se.sics.kompics.network.Transport;
 import system.network.TAddress;
 import system.network.TMessage;
 
-public class Decide extends TMessage {
+import java.io.Serializable;
+
+public class Decide extends TMessage implements Serializable{
 
         private int pts;
         private int pl;

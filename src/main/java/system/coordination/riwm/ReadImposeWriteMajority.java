@@ -7,7 +7,7 @@ import se.sics.kompics.network.Network;
 import system.beb.BestEffortBroadcastPort;
 import system.beb.event.BebBroadcastRequest;
 import system.beb.event.BebDeliver;
-import system.KVEntry;
+import system.data.KVEntry;
 import system.coordination.riwm.event.*;
 import system.coordination.riwm.port.RIWMPort;
 import system.data.Bound;

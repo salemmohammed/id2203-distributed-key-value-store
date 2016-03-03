@@ -5,12 +5,7 @@ import org.slf4j.LoggerFactory;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import system.client.event.*;
-import system.KVEntry;
 import system.network.TAddress;
-import system.network.TMessage;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 public class Client extends ComponentDefinition {
 

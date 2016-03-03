@@ -4,10 +4,12 @@ import se.sics.kompics.network.Transport;
 import system.network.TAddress;
 import system.network.TMessage;
 
+import java.io.Serializable;
+
 /**
  * Created by Robin on 2016-02-24.
  */
-public class Nack extends TMessage {
+public class Nack extends TMessage implements Serializable{
 
     private int ts;
     private int t;

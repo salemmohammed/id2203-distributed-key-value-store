@@ -1,14 +1,16 @@
 package system.coordination.riwm.event;
 
 import se.sics.kompics.network.Transport;
-import system.KVEntry;
+import system.data.KVEntry;
 import system.network.TAddress;
 import system.network.TMessage;
+
+import java.io.Serializable;
 
 /**
  * Created by marcus on 17/02/16.
  */
-public class ReadResponseMessage extends TMessage{
+public class ReadResponseMessage extends TMessage implements Serializable{
 
     private KVEntry kv;
     private int rId;

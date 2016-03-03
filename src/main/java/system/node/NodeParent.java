@@ -7,7 +7,7 @@ import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 import system.beb.BestEffortBroadcast;
-import system.KVEntry;
+import system.data.KVEntry;
 import system.beb.BestEffortBroadcastPort;
 import system.coordination.meld.MELDPort;
 import system.coordination.meld.MonarchicalEventualLeaderDetector;

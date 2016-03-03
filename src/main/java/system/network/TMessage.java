@@ -2,10 +2,10 @@ package system.network;
 
 import se.sics.kompics.network.Msg;
 import se.sics.kompics.network.Transport;
-import system.network.TAddress;
-import system.network.THeader;
 
-public abstract class TMessage implements Msg<TAddress, THeader> {
+import java.io.Serializable;
+
+public abstract class TMessage implements Msg<TAddress, THeader>, Serializable {
     
     public final THeader header;
     

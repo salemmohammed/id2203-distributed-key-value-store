@@ -2,11 +2,12 @@ package system.network;
 
 import se.sics.kompics.network.Address;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 
-public class TAddress implements Address {
+public class TAddress implements Address, Serializable {
 
     private final InetSocketAddress isa;
 

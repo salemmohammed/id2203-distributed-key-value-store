@@ -2,8 +2,7 @@ package deployment;
 
 import preload.DatastoreFactory;
 import se.sics.kompics.Kompics;
-import system.KVEntry;
-import system.data.Bound;
+import system.data.KVEntry;
 import system.data.ReplicationGroup;
 import system.network.TAddress;
 import system.node.NodeParent;
@@ -34,7 +33,7 @@ public class NodeMain {
 
 
             try {
-                self = new TAddress(InetAddress.getByName("127.0.0." + id), port);
+                self = new TAddress(InetAddress.getByName("127.0.0.1"), port);
                 store = datastoreFactory.getHashMapByIpSuffix(id);
                 replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(id);
                 replicationGroups = datastoreFactory.getReplicationGroups();

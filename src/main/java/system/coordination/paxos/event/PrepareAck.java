@@ -4,12 +4,13 @@ import se.sics.kompics.network.Transport;
 import system.network.TAddress;
 import system.network.TMessage;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by marcus on 23/02/16.
  */
-public class PrepareAck extends TMessage {
+public class PrepareAck extends TMessage implements Serializable{
 
     private int ts;
     private int ats;

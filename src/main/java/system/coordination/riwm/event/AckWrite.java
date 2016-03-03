@@ -4,12 +4,14 @@ import se.sics.kompics.network.Transport;
 import system.network.TAddress;
 import system.network.TMessage;
 
+import java.io.Serializable;
+
 /**
  * Created by marcus on 18/02/16.
  */
 
 
-public class AckWrite extends TMessage{
+public class AckWrite extends TMessage implements Serializable{
     private Integer key;
     private Integer rid;
 

@@ -10,7 +10,7 @@ import system.beb.event.BebDeliver;
 import system.client.event.CASRequest;
 import system.client.event.CommandMessage;
 import system.client.event.GETRequest;
-import system.KVEntry;
+import system.data.KVEntry;
 import system.client.event.PUTRequest;
 import system.coordination.meld.MELDPort;
 import system.coordination.meld.event.CheckLeader;

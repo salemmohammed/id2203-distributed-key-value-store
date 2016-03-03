@@ -4,9 +4,10 @@ import se.sics.kompics.network.Transport;
 import system.network.TAddress;
 import system.network.TMessage;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Accept extends TMessage {
+public class Accept extends TMessage implements Serializable {
     private int ts;
     private ArrayList<Object> vsuf;
     private int offs;

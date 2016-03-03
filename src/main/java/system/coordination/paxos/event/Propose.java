@@ -4,9 +4,10 @@ import se.sics.kompics.network.Transport;
 import system.network.TAddress;
 import system.network.TMessage;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Propose extends TMessage {
+public class Propose extends TMessage implements Serializable{
 
     private TMessage tMessage;
 

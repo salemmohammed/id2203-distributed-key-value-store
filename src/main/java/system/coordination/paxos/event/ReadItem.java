@@ -1,8 +1,9 @@
 package system.coordination.paxos.event;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ReadItem {
+public class ReadItem implements Serializable{
     private int ts;
     private List<Object> vsuf;
 

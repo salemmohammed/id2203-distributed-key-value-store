@@ -4,7 +4,9 @@ import se.sics.kompics.network.Header;
 import se.sics.kompics.network.Transport;
 import system.network.TAddress;
 
-public class THeader implements Header<TAddress> {
+import java.io.Serializable;
+
+public class THeader implements Header<TAddress>, Serializable {
 
     public final TAddress src;
     public TAddress dst;

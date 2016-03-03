@@ -5,10 +5,12 @@ import se.sics.kompics.network.Transport;
 import system.network.TAddress;
 import system.network.TMessage;
 
+import java.io.Serializable;
+
 /**
  * Created by Robin on 2016-02-14.
  */
-public class BebDataMessage extends TMessage {
+public class BebDataMessage extends TMessage implements Serializable {
 
     private TAddress source;
     private BebDeliver data;

@@ -3,7 +3,7 @@ package system.coordination.rsm;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
-import system.KVEntry;
+import system.data.KVEntry;
 import system.client.event.*;
 import system.coordination.rsm.event.ExecuteCommand;
 import system.coordination.rsm.event.ExecuteReponse;

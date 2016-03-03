@@ -1,6 +1,6 @@
 package preload;
 
-import system.KVEntry;
+import system.data.KVEntry;
 import system.data.Bound;
 import system.data.ReplicationGroup;
 import system.network.TAddress;

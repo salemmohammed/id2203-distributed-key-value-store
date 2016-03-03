@@ -5,7 +5,7 @@ import se.sics.kompics.simulator.adaptor.Operation2;
 import se.sics.kompics.simulator.adaptor.Operation3;
 import se.sics.kompics.simulator.adaptor.distributions.ConstantDistribution;
 import se.sics.kompics.simulator.events.system.KillNodeEvent;
-import system.KVEntry;
+import system.data.KVEntry;
 import system.client.ClientParent;
 import system.client.event.CASRequest;
 import system.client.event.CommandMessage;

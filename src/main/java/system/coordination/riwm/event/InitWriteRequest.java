@@ -1,7 +1,7 @@
 package system.coordination.riwm.event;
 
 import se.sics.kompics.KompicsEvent;
-import system.KVEntry;
+import system.data.KVEntry;
 
 /**
  * Created by marcus on 17/02/16.

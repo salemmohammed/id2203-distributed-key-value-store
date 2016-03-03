@@ -1,4 +1,4 @@
-package system;
+package system.data;
 
 import java.io.Serializable;
 
@@ -14,6 +14,13 @@ public class KVEntry implements Serializable {
         this.value = value;
 
     }
+
+    public KVEntry(int key) {
+        this.key = key;
+        this.timestamp = 0;
+        this.value = 0;
+    }
+
 
     public int getTimestamp() {
         return timestamp;

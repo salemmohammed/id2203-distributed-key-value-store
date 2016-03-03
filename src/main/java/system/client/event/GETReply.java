@@ -1,6 +1,6 @@
 package system.client.event;
 
-import system.KVEntry;
+import system.data.KVEntry;
 import system.network.TAddress;
 
 public class GETReply extends CommandMessage {
