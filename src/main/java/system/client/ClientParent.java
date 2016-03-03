@@ -18,19 +18,17 @@ public class ClientParent extends ComponentDefinition {
     Positive<Timer> timer = requires(Timer.class);
 
     public ClientParent(Init init) {
-        Component client = create(Client.class, new Client.Init(init.self, init.nodes, init.command));
+        Component client = create(Client.class, new Client.Init(init.self, init.command));
         connect(client.getNegative(Network.class), network, Channel.TWO_WAY);
     }
 
     public static class Init extends se.sics.kompics.Init<ClientParent> {
 
         private final TAddress self;
-        private ArrayList<TAddress> nodes;
         private CommandMessage command;
 
-        public Init(TAddress self, ArrayList<TAddress> nodes, CommandMessage command) {
+        public Init(TAddress self, CommandMessage command) {
             this.self = self;
-            this.nodes = nodes;
             this.command = command;
         }
     }

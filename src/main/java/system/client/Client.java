@@ -16,14 +16,12 @@ public class Client extends ComponentDefinition {
 
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
     Positive<Network> net = requires(Network.class);
-    private final ArrayList<TAddress> nodes;
     private final TAddress self;
     private int seqNum;
     private CommandMessage command;
 
     public Client(Init init) {
         self = init.self;
-        nodes = init.nodes;
         command = init.command;
         seqNum = 0;
 
@@ -71,13 +69,11 @@ public class Client extends ComponentDefinition {
 
     public static class Init extends se.sics.kompics.Init<Client> {
 
-        public final ArrayList<TAddress> nodes;
         public TAddress self;
         private CommandMessage command;
 
-        public Init(TAddress self, ArrayList<TAddress> nodes, CommandMessage command) {
+        public Init(TAddress self, CommandMessage command) {
             this.self = self;
-            this.nodes = nodes;
             this.command = command;
         }
     }

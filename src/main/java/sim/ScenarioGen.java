@@ -1,11 +1,10 @@
 package sim;
+import preload.DatastoreFactory;
 import se.sics.kompics.ComponentDefinition;
-import se.sics.kompics.simulator.adaptor.Operation;
 import se.sics.kompics.simulator.adaptor.Operation2;
 import se.sics.kompics.simulator.adaptor.Operation3;
 import se.sics.kompics.simulator.adaptor.distributions.ConstantDistribution;
 import se.sics.kompics.simulator.events.system.KillNodeEvent;
-import sim.preload.DatastoreFactory;
 import system.KVEntry;
 import system.client.ClientParent;
 import system.client.event.CASRequest;
@@ -14,7 +13,6 @@ import system.client.event.GETRequest;
 import system.client.event.PUTRequest;
 import system.data.Bound;
 import system.data.ReplicationGroup;
-import system.network.TMessage;
 import system.node.NodeParent;
 import system.network.TAddress;
 
@@ -29,7 +27,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
 public class ScenarioGen {
 
@@ -45,9 +42,11 @@ public class ScenarioGen {
                 ReplicationGroup replicationGroup;
                 TAddress leader;
                 Bound bound;
+
+                int port = self + 10000;
                 {
                     try {
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), port);
                         store = datastoreFactory.getHashMapByIpSuffix(self);
                         replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
                         replicationGroups = datastoreFactory.getReplicationGroups();
@@ -89,9 +88,10 @@ public class ScenarioGen {
                 ReplicationGroup replicationGroup;
                 TAddress leader;
                 Bound bound;
+                int port = self + 10000;
                 {
                     try {
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), port);
                         store = datastoreFactory.getHashMapByIpSuffix(self);
                         replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
                         replicationGroups = datastoreFactory.getReplicationGroups();
@@ -123,18 +123,22 @@ public class ScenarioGen {
 
     static Operation2 startGETClient = new Operation2<StartNodeEvent, Integer, Integer>() {
         @Override
-        public StartNodeEvent generate(final Integer ip, final Integer target) {
+        public StartNodeEvent generate(final Integer self, final Integer target) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
                 CommandMessage command;
+
+                int port = self + 10000;
+                int targetPort = target + 10000;
+
                 {
                     try {
                         //Client is started on ip ending with 100
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + ip), 10000);
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), port);
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
-                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), 10000));
+                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), targetPort));
                         this.nodes = nodes;
                         KVEntry kv = new KVEntry(5,-1,0);
                         this.command = new GETRequest(selfAdr, nodes.get(0), kv, selfAdr.getId(), 0);
@@ -154,7 +158,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new ClientParent.Init(selfAdr, nodes, command);
+                    return new ClientParent.Init(selfAdr, command);
                 }
             };
         }
@@ -162,18 +166,23 @@ public class ScenarioGen {
 
     static Operation3 startPUTClient = new Operation3<StartNodeEvent, Integer, Integer, Integer>() {
         @Override
-        public StartNodeEvent generate(final Integer val, final Integer ip, final Integer target) {
+        public StartNodeEvent generate(final Integer val, final Integer self, final Integer target) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
                 CommandMessage command;
+
+
+                int port = self + 10000;
+                int targetPort = target + 10000;
+
                 {
                     try {
                         //Client is started on ip ending with 100
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + ip), 10000);
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), port);
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
-                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), 10000));
+                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), targetPort));
                         KVEntry kv = new KVEntry(5,100,0);
                         this.command = new PUTRequest(selfAdr, nodes.get(0), kv, selfAdr.getId(), 0);
                         this.nodes = nodes;
@@ -193,7 +202,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new ClientParent.Init(selfAdr, nodes, command);
+                    return new ClientParent.Init(selfAdr, command);
                 }
             };
         }
@@ -201,18 +210,23 @@ public class ScenarioGen {
 
     static Operation3 startCASClient = new Operation3<StartNodeEvent, Integer, Integer, Integer>() {
         @Override
-        public StartNodeEvent generate(final Integer val, final Integer ip, final Integer target) {
+        public StartNodeEvent generate(final Integer val, final Integer self, final Integer target) {
             return new StartNodeEvent() {
                 TAddress selfAdr;
                 ArrayList<TAddress> nodes;
                 CommandMessage command;
+
+
+                int port = self + 10000;
+                int targetPort = target + 10000;
+
                 {
                     try {
                         //Client is started on ip ending with 100
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + ip), 10000);
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), port);
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
-                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), 10000));
+                        nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), targetPort));
                         KVEntry kv = new KVEntry(5,100,0);
                         this.command = new CASRequest(selfAdr, nodes.get(0), kv, 30, selfAdr.getId(), 0);
                         this.nodes = nodes;
@@ -232,7 +246,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new ClientParent.Init(selfAdr, nodes, command);
+                    return new ClientParent.Init(selfAdr, command);
                 }
             };
         }
@@ -245,10 +259,11 @@ public class ScenarioGen {
         public KillNodeEvent generate(final Integer self) {
             return new KillNodeEvent() {
                 TAddress selfAdr;
+                int port = self + 10000;
 
                 {
                     try {
-                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), 10000);
+                        selfAdr = new TAddress(InetAddress.getByName("192.193.0." + self), port);
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
                     }

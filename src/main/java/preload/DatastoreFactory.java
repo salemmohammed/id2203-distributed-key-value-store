@@ -1,4 +1,4 @@
-package sim.preload;
+package preload;
 
 import system.KVEntry;
 import system.data.Bound;
@@ -41,23 +41,23 @@ public class DatastoreFactory {
         try {
 
             ArrayList<TAddress> replicationGroup1Nodes = new ArrayList<>();
-            replicationGroup1Nodes.add(new TAddress(InetAddress.getByName("192.193.0.1"), 10000));
-            replicationGroup1Nodes.add(new TAddress(InetAddress.getByName("192.193.0.2"), 10000));
-            replicationGroup1Nodes.add(new TAddress(InetAddress.getByName("192.193.0.3"), 10000));
+            replicationGroup1Nodes.add(new TAddress(InetAddress.getByName("192.193.0.1"), 10001));
+            replicationGroup1Nodes.add(new TAddress(InetAddress.getByName("192.193.0.2"), 10002));
+            replicationGroup1Nodes.add(new TAddress(InetAddress.getByName("192.193.0.3"), 10003));
             ReplicationGroup replicationGroup1 = new ReplicationGroup(bounds[0], replicationGroup1Nodes);
             replicationGroups[0] = replicationGroup1;
 
             ArrayList<TAddress> replicationGroup2Nodes = new ArrayList<>();
-            replicationGroup2Nodes.add(new TAddress(InetAddress.getByName("192.193.0.4"), 10000));
-            replicationGroup2Nodes.add(new TAddress(InetAddress.getByName("192.193.0.5"), 10000));
-            replicationGroup2Nodes.add(new TAddress(InetAddress.getByName("192.193.0.6"), 10000));
+            replicationGroup2Nodes.add(new TAddress(InetAddress.getByName("192.193.0.4"), 10004));
+            replicationGroup2Nodes.add(new TAddress(InetAddress.getByName("192.193.0.5"), 10005));
+            replicationGroup2Nodes.add(new TAddress(InetAddress.getByName("192.193.0.6"), 10006));
             ReplicationGroup replicationGroup2 = new ReplicationGroup(bounds[1], replicationGroup2Nodes);
             replicationGroups[1] = replicationGroup2;
 
             ArrayList<TAddress> replicationGroup3Nodes = new ArrayList<>();
-            replicationGroup3Nodes.add(new TAddress(InetAddress.getByName("192.193.0.7"), 10000));
-            replicationGroup3Nodes.add(new TAddress(InetAddress.getByName("192.193.0.8"), 10000));
-            replicationGroup3Nodes.add(new TAddress(InetAddress.getByName("192.193.0.9"), 10000));
+            replicationGroup3Nodes.add(new TAddress(InetAddress.getByName("192.193.0.7"), 10007));
+            replicationGroup3Nodes.add(new TAddress(InetAddress.getByName("192.193.0.8"), 10008));
+            replicationGroup3Nodes.add(new TAddress(InetAddress.getByName("192.193.0.9"), 10009));
             ReplicationGroup replicationGroup3 = new ReplicationGroup(bounds[2], replicationGroup3Nodes);
             replicationGroups[2] = replicationGroup3;
         }
