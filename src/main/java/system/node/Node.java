@@ -63,7 +63,7 @@ public class Node extends ComponentDefinition {
     Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start event) {
-            LOG.info("NODE:" + self + ": Start Event Triggered (Replication= " + replicationGroup+")");
+            LOG.info(self + ": Start Event Triggered (Replication= " + replicationGroup+")");
         }
     };
 
@@ -163,7 +163,7 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(AscAbort abortEvent) {
             commandMessageHoldbackQueue.add(abortEvent.getCommandMessage());
-            System.out.println("NODE:" + self + " Received AscAbort, checking for new trust..." +  abortEvent);
+            System.out.println(self + " Received AscAbort, checking for new trust..." +  abortEvent);
             trigger(new CheckLeader(), meld);
         }
     };
@@ -193,13 +193,13 @@ public class Node extends ComponentDefinition {
     Handler<Trust> trustHandler = new Handler<Trust>() {
         @Override
         public void handle(Trust trust) {
-            System.out.println("NODE:" + self + " Received trust, new leader is " + trust.getLeader());
+            System.out.println(self + " Received trust, new leader is " + trust.getLeader());
             leader = trust.getLeader();
             for(int i = 0; i < commandMessageHoldbackQueue.size(); i++) {
                 CommandMessage commandMessage = commandMessageHoldbackQueue.remove(i);
                 commandMessage.setDestination(leader);
                 trigger(commandMessage, net);
-                System.out.println("NODE:" + self + " Forwarding HBQ-MSG " + commandMessage + " to " + commandMessage.getDestination());
+                System.out.println(self + " Forwarding HBQ-MSG " + commandMessage + " to " + commandMessage.getDestination());
             }
         }
     };
