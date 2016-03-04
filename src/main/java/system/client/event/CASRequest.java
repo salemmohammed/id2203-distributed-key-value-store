@@ -3,6 +3,8 @@ package system.client.event;
 import system.data.KVEntry;
 import system.network.TAddress;
 
+import java.io.Serializable;
+
 public class CASRequest extends CommandMessage {
 
     private KVEntry kv;

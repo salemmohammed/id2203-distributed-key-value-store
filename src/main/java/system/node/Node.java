@@ -63,7 +63,8 @@ public class Node extends ComponentDefinition {
     Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start event) {
-            LOG.info(self + ": Start Event Triggered (Replication= " + replicationGroup+")");
+            System.out.println(self + ": Start Event Triggered (Replication= " + replicationGroup+")");
+            System.out.println(self + ": My leader is " + leader);
         }
     };
 

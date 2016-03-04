@@ -1,7 +1,9 @@
 package deployment;
 
 import preload.DatastoreFactory;
+import preload.DatastoreFactoryDeployment;
 import se.sics.kompics.Kompics;
+import system.client.ClientParentDeployment;
 import system.data.KVEntry;
 import system.client.ClientParent;
 import system.client.event.CommandMessage;
@@ -31,7 +33,7 @@ public class ClientMain {
             e.printStackTrace();
         }
 
-        DatastoreFactory datastoreFactory = new DatastoreFactory();
+        DatastoreFactoryDeployment datastoreFactory = new DatastoreFactoryDeployment();
 
         CommandMessage command;
         TAddress dst = datastoreFactory.getReplicationGroupByIpSuffix(2).getNodes().get(1);
@@ -40,9 +42,8 @@ public class ClientMain {
         switch (commandType) {
             case "GET":
                 command = new GETRequest(ip, dst, kv, id, 1);
-                Kompics.createAndStart(ClientParent.class, new ClientParent.Init(ip, command));
+                Kompics.createAndStart(ClientParentDeployment.class, new ClientParentDeployment.Init(ip, command));
 
         }
-
     }
 }

@@ -26,8 +26,8 @@ public class EventuallyPerfectFailureDetector extends ComponentDefinition {
     private final ArrayList<TAddress> aliveNodes;
     private final TAddress self;
     private UUID timerId;
-    private int heartbeatDelay = 1;
-    private int heartbeatDelayIncrease = 0;
+    private int heartbeatDelay = 40;
+    private int heartbeatDelayIncrease = 10;
     Positive<Network> net = requires(Network.class);
     Positive<Timer> timer = requires(Timer.class);
     Negative<FDPort> epfd = provides(FDPort.class);

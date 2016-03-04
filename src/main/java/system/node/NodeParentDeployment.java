@@ -5,7 +5,11 @@ import se.sics.kompics.Component;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Positive;
 import se.sics.kompics.network.Network;
+import se.sics.kompics.network.netty.NettyInit;
+import se.sics.kompics.network.netty.NettyNetwork;
 import se.sics.kompics.timer.Timer;
+import se.sics.kompics.timer.java.JavaTimer;
+import sun.nio.ch.Net;
 import system.beb.BestEffortBroadcast;
 import system.data.KVEntry;
 import system.beb.BestEffortBroadcastPort;
@@ -23,26 +27,27 @@ import system.network.TAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class NodeParent extends ComponentDefinition {
+public class NodeParentDeployment extends ComponentDefinition {
 
-    Positive<Network> network = requires(Network.class);
-    Positive<Timer> timer = requires(Timer.class);
+    public NodeParentDeployment(Init init) {
 
-    public NodeParent(Init init) {
+        Component timer = create(JavaTimer.class, Init.NONE);
+        Component network = create(NettyNetwork.class, new NettyInit(init.self));
+
         Component node = create(Node.class, new Node.Init(init.self, init.replicationGroups, init.store, init.replicationGroup, init.leader));
-        connect(node.getNegative(Network.class), network, Channel.TWO_WAY);
+        connect(node.getNegative(Network.class), network.getPositive(Network.class), Channel.TWO_WAY);
 
         Component epfd = create(EventuallyPerfectFailureDetector.class, new EventuallyPerfectFailureDetector.Init(init.self, init.replicationGroup.getNodes()));
-        connect(epfd.getNegative(Network.class), network, Channel.TWO_WAY);
-        connect(epfd.getNegative(Timer.class), timer, Channel.TWO_WAY);
+        connect(epfd.getNegative(Network.class), network.getPositive(Network.class), Channel.TWO_WAY);
+        connect(epfd.getNegative(Timer.class), timer.getPositive(Timer.class), Channel.TWO_WAY);
 
         Component beb = create(BestEffortBroadcast.class, new BestEffortBroadcast.Init(init.self));
         connect(node.getNegative(BestEffortBroadcastPort.class), beb.getPositive(BestEffortBroadcastPort.class), Channel.TWO_WAY);
-        connect(beb.getNegative(Network.class),network, Channel.TWO_WAY);
+        connect(beb.getNegative(Network.class), network.getPositive(Network.class), Channel.TWO_WAY);
 
         Component asc = create(AbortableSequenceConsensus.class, new AbortableSequenceConsensus.Init(init.self, init.replicationGroup.getNodes()));
         connect(node.getNegative(ASCPort.class), asc.getPositive(ASCPort.class), Channel.TWO_WAY);
-        connect(asc.getNegative(Network.class), network, Channel.TWO_WAY);
+        connect(asc.getNegative(Network.class), network.getPositive(Network.class), Channel.TWO_WAY);
 
         Component rsm = create(ReplicatedStateMachine.class, new ReplicatedStateMachine.Init(init.self, init.replicationGroup.getBound(), init.store));
         connect(node.getNegative(RSMPort.class), rsm.getPositive(RSMPort.class), Channel.TWO_WAY);

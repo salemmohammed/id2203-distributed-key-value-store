@@ -19,11 +19,13 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
 
     private ArrayList <TAddress> suspected;
     private TAddress leader;
+    private TAddress self;
     private Positive<FDPort> epfd = requires(FDPort.class);
     Negative<MELDPort> meld = provides(MELDPort.class);
     private ArrayList <TAddress> replicationGroup;
 
     public MonarchicalEventualLeaderDetector(Init init) {
+        this.self = init.self;
         this.replicationGroup = init.replicationGroup;
         suspected = new ArrayList<>();
 
@@ -78,7 +80,7 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
     }
 
     private TAddress maxRank(ArrayList <TAddress> nodes) {
-        TAddress lowestIpNode = null;
+        TAddress lowestIpNode = self;
         for(TAddress node : nodes) {
             if(lowestIpNode == null || lowestIpNode.getId() > node.getId()) {
                 lowestIpNode = node;
@@ -90,9 +92,11 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
 
     public static class Init extends se.sics.kompics.Init<MonarchicalEventualLeaderDetector> {
 
-        public final ArrayList<TAddress> replicationGroup;
+        private ArrayList<TAddress> replicationGroup;
+        private TAddress self;
 
-        public Init(ArrayList<TAddress> replicationGroup) {
+        public Init(TAddress self, ArrayList<TAddress> replicationGroup) {
+            this.self = self;
             this.replicationGroup = replicationGroup;
         }
     }

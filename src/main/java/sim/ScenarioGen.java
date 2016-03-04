@@ -51,7 +51,6 @@ public class ScenarioGen {
                         replicationGroup = datastoreFactory.getReplicationGroupByIpSuffix(self);
                         replicationGroups = datastoreFactory.getReplicationGroups();
                         leader = datastoreFactory.getReplicationGroupLeader(self);
-                        System.out.println(self + " my leader is " + leader);
                         bound = datastoreFactory.getBoundsByIpSuffix(self);
 
                     } catch (UnknownHostException ex) {
@@ -434,16 +433,19 @@ public class ScenarioGen {
     /*
     -- Simulation scenario to test Monarchical-Eventual-Leader-Detector component --
     Properties:
-    EPFD1: Strong completeness: Eventually, every process that crashes is permanently suspected by every correct process.
-    EPFD2: Eventual strong accuracy: Eventually, no correct process is suspected by any correct process.
+    ELD1: Eventual accuracy: There is a time after which every correct process trusts some correct process.
+    ELD2: Eventual agreement: There is a time after which no two correct processes trust different correct processes.
+
+    The monarchical rank is decided by the last octet X, of the ipv4 address (-.-.-.X). A lower number is considered
+    higher rank.
 
     SCENARIO:
     1. The scenario first creates the three replication groups with three nodes in each group.
-    2. After the nodes have been started a client sends a get request to a node in the wrong replication group.
-    3. The receiving node forwards the get request to the responsible replication group using Best-Effort Broadcast.
-    4. In the printouts we can see that each node in the group receives the broadcast according to BEB1, BEB2 and BEB3.
-    5. The scenario then continues by killing a node in the responsible replication group.
-    6. After having killed the node a second client sends a get request which is received by the two correct processes.
+    2. Kill the node with the octet of 1.
+    3. Kill the node with the octet of 2.
+    4. Restart the node with octet of 2.
+    5. Restart the node with octet of 1.
+    6. Printouts show that ELD1 and ELD2 properties are satisfied since all correct nodes consider the last octet to be
      */
     public static SimulationScenario testMonarchicalEventualLeaderDetectorProperties() {
         SimulationScenario testLeaderElection = new SimulationScenario() {

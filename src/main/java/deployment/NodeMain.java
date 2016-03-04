@@ -1,11 +1,13 @@
 package deployment;
 
 import preload.DatastoreFactory;
+import preload.DatastoreFactoryDeployment;
 import se.sics.kompics.Kompics;
 import system.data.KVEntry;
 import system.data.ReplicationGroup;
 import system.network.TAddress;
 import system.node.NodeParent;
+import system.node.NodeParentDeployment;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -19,7 +21,7 @@ public class NodeMain {
     public static void main(String [] args) {
         int id = Integer.parseInt(args[0]);
 
-        DatastoreFactory datastoreFactory = new DatastoreFactory();
+        DatastoreFactoryDeployment datastoreFactory = new DatastoreFactoryDeployment();
 
 
         TAddress self;
@@ -29,8 +31,6 @@ public class NodeMain {
         TAddress leader;
 
         int port = 10000 + id;
-
-
 
             try {
                 self = new TAddress(InetAddress.getByName("127.0.0.1"), port);
@@ -45,13 +45,6 @@ public class NodeMain {
                 throw new RuntimeException(ex);
             }
 
-
-        Kompics.createAndStart(NodeParent.class, new NodeParent.Init(self, replicationGroups, store, replicationGroup, leader));
-
-
+        Kompics.createAndStart(NodeParentDeployment.class, new NodeParentDeployment.Init(self, replicationGroups, store, replicationGroup, leader));
     }
-
-
-
-
 }
