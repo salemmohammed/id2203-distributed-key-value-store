@@ -310,11 +310,11 @@ public class ScenarioGen {
                 };
 
                 StochasticProcess getClient2 = new StochasticProcess() {
-                {
-                    eventInterArrivalTime(constant(100));
-                    raise(3, startGETClient, new BasicIntSequentialDistribution(15), new ConstantDistribution<Integer>(Integer.class, 3));
-                }
-            };
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(3, startGETClient, new BasicIntSequentialDistribution(15), new ConstantDistribution<Integer>(Integer.class, 3));
+                    }
+                };
 
                 StochasticProcess getClient3 = new StochasticProcess() {
                     {
@@ -428,6 +428,154 @@ public class ScenarioGen {
         return allOperationOneLeader;
     }
 
+    /*
+    -- Simulation scenario to test Eventually-Perfect-Failure-Detector component --
+    Properties:
+    EPFD1: Strong completeness: Eventually, every process that crashes is permanently suspected by every correct process.
+    EPFD2: Eventual strong accuracy: Eventually, no correct process is suspected by any correct process.
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. Kill the node with the last octet of 1.
+    3. Kill the node with the last octet of 2.
+    4. Printouts show that as soon as a process is killed, it is suspected by other correct nodes which satisfies
+    EPFD1. Removing comment in class EventuallyPerfectFailureDetector makes all nodes to suspected all other nodes
+    by default. By seeing that all correct nodes are removed from all correct nodes suspect sets, we can verify that
+    EPFD2 is satisfied.
+     */
+    public static SimulationScenario testEventualPerfectFailureDetectorProperties() {
+        SimulationScenario testFailureDetector = new SimulationScenario() {
+            {
+
+                //Start three nodes holding even values
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(3, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess killNode1 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess killNode2 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+                nodeGroupProcess.start();
+                killNode1.startAfterTerminationOf(200, nodeGroupProcess);
+                killNode2.startAfterTerminationOf(200, killNode1);
+                terminateAfterTerminationOf(100, killNode2);
+            }
+        };
+
+        return testFailureDetector;
+    }
+
+
+    /*
+    -- Simulation scenario to test Replicated-State-Machine component --
+    Properties:
+    RSM1: Agreement: All correct processes obtain the same sequence of outputs.
+    RSM2: Termination: If a correct process executes a command, then the command eventually produces an output.
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. A client sends a get request to leader in replication group.
+    3. Printouts show that all correct processes deliver, satisfying PL1. The message is not duplicated, satisfying PL2.
+    All delivered messages in the scenario was previously sent by a process.
+    */
+    public static SimulationScenario testReplicatedStateMachineProperties() {
+        SimulationScenario testReplicatedStateMachine = new SimulationScenario() {
+            {
+
+                //Start three nodes holding even values
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess getClient1 = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(2, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 2));
+                    }
+                };
+
+                //Start client that gets a value
+                StochasticProcess putClient1 = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(2, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10),new ConstantDistribution<Integer>(Integer.class, 1));
+                    }
+                };
+
+                nodeGroupProcess.start();
+                putClient1.start();
+                getClient1.startAtSameTimeWith(putClient1);
+
+
+
+            }
+        };
+
+        return testReplicatedStateMachine;
+    }
+
+
+
+    /*
+    -- Simulation scenario to test Pefect-Point-To-Point-Link --
+    Properties:
+    PL1: Reliable delivery: If a correct process p sends a message m to a correct process q, then q eventually delivers m.
+    PL2: No duplication: No message is delivered by a process more than once.
+    PL3: No creation: If some process q delivers a message m with sender p, then m was previously sent to q by process p.
+
+    TCP/IP guarantees all properties of Perfect-Point-To-Point-Link.
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. A client sends a get request to leader in replication group.
+    3. Printouts show that all correct processes deliver, satisfying PL1. The message is not duplicated, satisfying PL2.
+    All delivered messages in the scenario was previously sent by a process.
+ */
+    public static SimulationScenario testPerfectPointToPointLinkProperties() {
+        SimulationScenario testPerfectLink = new SimulationScenario() {
+            {
+
+                //Start three nodes holding even values
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess getClient1 = new StochasticProcess() {
+                    {
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 1));
+                    }
+                };
+
+
+                nodeGroupProcess.start();
+                getClient1.startAfterTerminationOf(100, nodeGroupProcess);
+                terminateAfterTerminationOf(100, getClient1);
+            }
+        };
+
+        return testPerfectLink;
+    }
+
+
+
 
 
     /*
@@ -441,11 +589,12 @@ public class ScenarioGen {
 
     SCENARIO:
     1. The scenario first creates the three replication groups with three nodes in each group.
-    2. Kill the node with the octet of 1.
-    3. Kill the node with the octet of 2.
-    4. Restart the node with octet of 2.
-    5. Restart the node with octet of 1.
-    6. Printouts show that ELD1 and ELD2 properties are satisfied since all correct nodes consider the last octet to be
+    2. Kill the node with the last octet of 1.
+    3. Kill the node with the last octet of 2.
+    4. Restart the node with last octet of 2.
+    5. Restart the node with last octet of 1.
+    6. Printouts show that ELD1 and ELD2 properties are satisfied since all correct nodes consider the node with lowest
+    number on the last octet to be the leader even if they are restored. Which also satisfies the properties of monarchical leader election.
      */
     public static SimulationScenario testMonarchicalEventualLeaderDetectorProperties() {
         SimulationScenario testLeaderElection = new SimulationScenario() {

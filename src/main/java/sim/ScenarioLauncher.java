@@ -11,7 +11,10 @@ public class ScenarioLauncher {
         SimulationScenario allLeaderAllOperationsASC = ScenarioGen.testAllOperationsAllLeaders();
         SimulationScenario oneLeaderAllOperationsASC = ScenarioGen.testAllOperationsOneLeader();
         SimulationScenario bestEffortBroadcastScenario = ScenarioGen.testBestEffortBroadcastProperties();
-        monarchicalEventualLeaderDetectorScenario.simulate(LauncherComp.class);
+        SimulationScenario eventualFailureDetectorScenario = ScenarioGen.testEventualPerfectFailureDetectorProperties();
+        SimulationScenario perfectPointToPointLinkScenario = ScenarioGen.testPerfectPointToPointLinkProperties();
+        SimulationScenario replicatedStateMachineScenario = ScenarioGen.testReplicatedStateMachineProperties();
+        replicatedStateMachineScenario.simulate(LauncherComp.class);
         //monarchicalEventualLeaderDetectorScenario.simulate(LauncherComp.class);
     }
 }

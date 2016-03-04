@@ -49,7 +49,13 @@ public class EventuallyPerfectFailureDetector extends ComponentDefinition {
         @Override
         public void handle(Start event) {
             //Add all neighbours as alive nodes
+
+            /*
+            To test property EPFD2
+            suspectedNodes.addAll(neighbours);
+            */
             aliveNodes.addAll(neighbours);
+
             //Subscribe to one timeout
             startTimer(heartbeatDelay);
         }
