@@ -7,14 +7,20 @@ public class ScenarioLauncher {
     public static void main(String[] args) {
         long seed = 123;
         SimulationScenario.setSeed(seed);
-        SimulationScenario monarchicalEventualLeaderDetectorScenario = ScenarioGen.testMonarchicalEventualLeaderDetectorProperties();
+
+
+
         SimulationScenario allLeaderAllOperationsASC = ScenarioGen.testAllOperationsAllLeaders();
         SimulationScenario oneLeaderAllOperationsASC = ScenarioGen.testAllOperationsOneLeader();
+
+
+
+        //Shippable
+        SimulationScenario monarchicalEventualLeaderDetectorScenario = ScenarioGen.testMonarchicalEventualLeaderDetectorProperties();
         SimulationScenario bestEffortBroadcastScenario = ScenarioGen.testBestEffortBroadcastProperties();
         SimulationScenario eventualFailureDetectorScenario = ScenarioGen.testEventualPerfectFailureDetectorProperties();
         SimulationScenario perfectPointToPointLinkScenario = ScenarioGen.testPerfectPointToPointLinkProperties();
         SimulationScenario replicatedStateMachineScenario = ScenarioGen.testReplicatedStateMachineProperties();
         replicatedStateMachineScenario.simulate(LauncherComp.class);
-        //monarchicalEventualLeaderDetectorScenario.simulate(LauncherComp.class);
     }
 }

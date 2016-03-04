@@ -56,7 +56,7 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         ExecuteReponse response = null;
         KVEntry kv = ((GETRequest) commandMessage).getKv();
         kv = store.get(kv.getKey());
-        System.out.println(self + " Decided and executing: GET:" + "key= " + kv.getKey());
+        System.out.println(self + " Decided and executing: GET:" + " key= " + kv.getKey() + " value= " + kv.getValue());
 
 
 

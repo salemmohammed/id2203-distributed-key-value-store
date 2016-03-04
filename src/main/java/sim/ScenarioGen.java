@@ -181,7 +181,7 @@ public class ScenarioGen {
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), targetPort));
-                        KVEntry kv = new KVEntry(5,100,0);
+                        KVEntry kv = new KVEntry(5,val,0);
                         this.command = new PUTRequest(selfAdr, nodes.get(0), kv, selfAdr.getId(), 0);
                         this.nodes = nodes;
                     } catch (UnknownHostException ex) {
@@ -478,6 +478,45 @@ public class ScenarioGen {
     }
 
 
+    public static SimulationScenario testAbortableSequenceConsensusProperties() {
+        SimulationScenario testAbortableSequenceConsensus = new SimulationScenario() {
+            {
+
+                //Start three nodes holding even values
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess getClient1 = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(3, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 2));
+                    }
+                };
+
+                //Start client that gets a value
+                StochasticProcess putClient1 = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(3, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10),new ConstantDistribution<Integer>(Integer.class, 2));
+                    }
+                };
+
+
+                nodeGroupProcess.start();
+                putClient1.start();
+                getClient1.startAtSameTimeWith(putClient1);
+            }
+        };
+
+        return testAbortableSequenceConsensus;
+    }
+
+
+
     /*
     -- Simulation scenario to test Replicated-State-Machine component --
     Properties:
@@ -486,9 +525,9 @@ public class ScenarioGen {
 
     SCENARIO:
     1. The scenario first creates the three replication groups with three nodes in each group.
-    2. A client sends a get request to leader in replication group.
-    3. Printouts show that all correct processes deliver, satisfying PL1. The message is not duplicated, satisfying PL2.
-    All delivered messages in the scenario was previously sent by a process.
+    2. Two clients each sending a PUT request and two clients that send one GET request each is started at the same time.
+    3. Printouts show that all processes obtain the same sequence of outputs, satisfying the property RSM1. All executed
+     commands by correct processes produces an output, ensuring that property RSM2 is satisfied.
     */
     public static SimulationScenario testReplicatedStateMachineProperties() {
         SimulationScenario testReplicatedStateMachine = new SimulationScenario() {
@@ -513,16 +552,13 @@ public class ScenarioGen {
                 StochasticProcess putClient1 = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(2, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10),new ConstantDistribution<Integer>(Integer.class, 1));
+                        raise(2, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10),new ConstantDistribution<Integer>(Integer.class, 2));
                     }
                 };
 
                 nodeGroupProcess.start();
                 putClient1.start();
                 getClient1.startAtSameTimeWith(putClient1);
-
-
-
             }
         };
 
