@@ -27,4 +27,10 @@ public class CASRequest extends CommandMessage {
     public int getNewValue() {
         return newValue;
     }
+
+
+    public String toString() {
+        return "{CASRequest: key= " + kv.getKey() + ", value= " + kv.getValue() + ", newValue= " + newValue + "}";
+
+    }
 }

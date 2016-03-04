@@ -19,4 +19,9 @@ public class GETReply extends CommandMessage {
         return kv;
     }
 
+    public String toString() {
+        return "{GETReply: key= " + kv.getKey() + ", value= " + kv.getValue() + ", successful= " + successful + "}";
+
+    }
+
 }

@@ -17,4 +17,10 @@ public class PUTReply extends CommandMessage {
         return kv;
     }
 
+
+    public String toString() {
+        return "{PUTReply: key= " + kv.getKey() + ", value= " + kv.getValue() + ", successful= " + successful + "}";
+
+    }
+
 }

@@ -33,6 +33,7 @@ public class Node extends ComponentDefinition {
     private ReplicationGroup replicationGroup;
     private TAddress leader;
     private ArrayList<CommandMessage> commandMessageHoldbackQueue = new ArrayList<>();
+    private ArrayList<CommandMessage> decidedSequence = new ArrayList<>();
     private int seqNum;
 
     private ArrayList<ReplicationGroup> replicationGroups;
@@ -175,10 +176,42 @@ public class Node extends ComponentDefinition {
         public void handle(AscDecide ascDecide) {
             CommandMessage commandMessage = (CommandMessage) ascDecide.getValue();
             ExecuteCommand executeCommand = new ExecuteCommand(commandMessage);
+            ArrayList<Object> av = ascDecide.getAv();
+
+            decidedSequence.add(commandMessage);
+            printDecidedSequence();
+
 
             trigger(executeCommand, rsm);
         }
     };
+
+    private void printDecidedSequence() {
+        System.out.print(self + " Decided Sequence so far: [");
+        int i = 0;
+        for(Object accepted : decidedSequence) {
+            CommandMessage command = (CommandMessage) accepted;
+            if(command instanceof GETRequest) {
+                System.out.print(((GETRequest) command).toString());
+            }
+            else if(command instanceof PUTRequest) {
+                System.out.print(((PUTRequest) command).toString());
+            }
+            else if(command instanceof CASRequest) {
+                System.out.print(((CASRequest) command).toString());
+            }
+
+            i++;
+            if(i != decidedSequence.size()) {
+                System.out.print(", ");
+            }
+
+
+        }
+        System.out.print("]");
+        System.out.println("");
+
+    }
 
 
     Handler<ExecuteReponse> executeReponseHandler = new Handler<ExecuteReponse>() {

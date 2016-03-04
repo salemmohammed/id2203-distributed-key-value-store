@@ -478,6 +478,24 @@ public class ScenarioGen {
     }
 
 
+    /*
+    -- Simulation scenario to test the Abortable-Sequence-Consensus component --
+    Properties:
+    Validity: If process p decides v then v is a sequence of proposed commands without duplicates
+    Uniform Agreement:  If process p decides u and process q decides v then one is a prefix of the other
+    Integrity:  If process p decides u and later decides v then u is a prefix of v
+    Termination:  If command C is proposed then eventually every correct process decides a sequence containing C
+
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. Kill the node with the last octet of 1.
+    3. Kill the node with the last octet of 2.
+    4. Printouts show that as soon as a process is killed, it is suspected by other correct nodes which satisfies
+    EPFD1. Removing comment in class EventuallyPerfectFailureDetector makes all nodes to suspected all other nodes
+    by default. By seeing that all correct nodes are removed from all correct nodes suspect sets, we can verify that
+    EPFD2 is satisfied.
+     */
     public static SimulationScenario testAbortableSequenceConsensusProperties() {
         SimulationScenario testAbortableSequenceConsensus = new SimulationScenario() {
             {

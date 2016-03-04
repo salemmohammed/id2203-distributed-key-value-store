@@ -15,4 +15,11 @@ public class GETRequest extends CommandMessage {
     public KVEntry getKv() {
         return kv;
     }
+
+
+    public String toString() {
+        return "{GETRequest: key= " + kv.getKey() + "}";
+
+    }
+
 }

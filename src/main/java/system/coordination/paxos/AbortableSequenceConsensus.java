@@ -256,7 +256,7 @@ public class AbortableSequenceConsensus extends ComponentDefinition {
             t = Math.max(t, event.getT()) + 1;
             if(event.getPts() == prepts) {
                 while(al < event.getPl()) {
-                    trigger(new AscDecide(av.get(al)), asc);
+                    trigger(new AscDecide(av.get(al), av), asc);
                     al++;
                 }
             }

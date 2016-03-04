@@ -24,4 +24,10 @@ public class CASReply extends CommandMessage {
     public int getOldValue() {
         return oldValue;
     }
+
+
+    public String toString() {
+        return "{CASReply: key= " + kv.getKey() + ", value= " + kv.getValue() + ", oldValue= " + oldValue + ", successful= " + successful + "}";
+
+    }
 }

@@ -16,4 +16,10 @@ public class PUTRequest extends CommandMessage {
         return kv;
     }
 
+
+    public String toString() {
+        return "{PUTRequest: key= " + kv.getKey() + ", value= " + kv.getValue() + "}";
+
+    }
+
 }
