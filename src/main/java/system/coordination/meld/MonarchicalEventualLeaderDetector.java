@@ -82,7 +82,7 @@ public class MonarchicalEventualLeaderDetector extends ComponentDefinition {
     private TAddress maxRank(ArrayList <TAddress> nodes) {
         TAddress lowestIpNode = self;
         for(TAddress node : nodes) {
-            if(lowestIpNode == null || lowestIpNode.getId() > node.getId()) {
+            if(lowestIpNode == null || lowestIpNode.getId() > node.getId() || lowestIpNode.getPort() > node.getPort()) {
                 lowestIpNode = node;
             }
         }
