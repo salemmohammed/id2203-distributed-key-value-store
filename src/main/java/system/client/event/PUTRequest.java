@@ -16,12 +16,4 @@ public class PUTRequest extends CommandMessage {
         return kv;
     }
 
-    public boolean equals(Object obj) {
-        PUTRequest getRequest = (PUTRequest) obj;
-        KVEntry kvEntry = getRequest.getKv();
-        if(kvEntry.getKey() == kv.getKey() && kvEntry.getValue() == kv.getValue()) {
-            return true;
-        }
-        return false;
-    }
 }
