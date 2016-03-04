@@ -9,9 +9,10 @@ public class GETReply extends CommandMessage {
     public boolean successful;
 
 
-    public GETReply(TAddress src, TAddress dst, KVEntry kv) {
-        super(src, dst);
+    public GETReply(TAddress src, TAddress dst, KVEntry kv, int pid, int seqNum) {
+        super(src, dst, pid, seqNum);
         this.kv = kv;
+
     }
 
     public KVEntry getKVEntry() {
@@ -20,7 +21,9 @@ public class GETReply extends CommandMessage {
     }
 
     public String toString() {
-        return "{GETReply: key= " + kv.getKey() + ", value= " + kv.getValue() + ", successful= " + successful + "}";
+
+        String commandString = "pid= " + this.getPid() + ", seqNum= " + this.getSeqNum();
+        return "{GETReply: " + commandString + ", key= " + kv.getKey() + ", value= " + kv.getValue() + ", successful= " + successful + "}";
 
     }
 

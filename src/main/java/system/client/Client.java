@@ -39,14 +39,14 @@ public class Client extends ComponentDefinition {
     Handler<GETReply> getReplyHandler = new Handler<GETReply>() {
         @Override
         public void handle(GETReply getReply) {
-            System.out.println("CLIENT" + self + ": Received GETREPLY key-" + getReply.getKVEntry().getKey() + " value-" +getReply.getKVEntry().getValue()  + " from " + getReply.getSource());
+            System.out.println("\nCLIENT" + self + ": Received GETREPLY key-" + getReply.getKVEntry().getKey() + " value-" +getReply.getKVEntry().getValue()  + " FROM " + getReply.getSource());
         }
     };
 
     Handler<PUTReply> putReplyHandler = new Handler<PUTReply>() {
         @Override
         public void handle(PUTReply putReply) {
-            System.out.println("CLIENT" + self + ": Received PUTREPLY: key-" + putReply.getKv().getKey() + " value-"+putReply.getKv().getValue() + " success-" + putReply.successful  + " from " + putReply.getSource());
+            System.out.println("\nCLIENT" + self + ": Received PUTREPLY: key-" + putReply.getKv().getKey() + " value-"+putReply.getKv().getValue() + " success-" + putReply.successful  + " FROM " + putReply.getSource());
         }
     };
 
@@ -54,10 +54,10 @@ public class Client extends ComponentDefinition {
         @Override
         public void handle(CASReply casReply) {
             if(casReply.successful) {
-                System.out.println("CLIENT" + self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getOldValue() + " newValue-"+casReply.getKVEntry().getValue() + " success-" + casReply.successful + " from " + casReply.getSource());
+                System.out.println("\nCLIENT" + self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getOldValue() + " newValue-"+casReply.getKVEntry().getValue() + " success-" + casReply.successful + " FROM " + casReply.getSource());
             }
             else {
-                System.out.println("CLIENT" + self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getKVEntry().getValue() + " newValue-" + casReply.getOldValue() + " success-" + casReply.successful  + " from " + casReply.getSource());
+                System.out.println("\nCLIENT" + self + ": Received CASREPLY: key-" + casReply.getKVEntry().getKey() + " referenceValue-" + casReply.getKVEntry().getValue() + " newValue-" + casReply.getOldValue() + " success-" + casReply.successful  + " FROM " + casReply.getSource());
             }
         }
     };

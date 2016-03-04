@@ -46,6 +46,8 @@ public class ReplicatedStateMachine extends ComponentDefinition {
             if(commandMessage instanceof CASRequest) {
                 response = executeCas(commandMessage);
             }
+            System.out.println(self + " RSM Response " + response.getCommandMessage().toString() + " to " + response.getCommandMessage().getDestination());
+
             trigger(response, rsm);
         }
     };
@@ -56,13 +58,13 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         ExecuteReponse response = null;
         KVEntry kv = ((GETRequest) commandMessage).getKv();
         kv = store.get(kv.getKey());
-        System.out.println(self + " RSM Executing GETRequest: " + ((GETRequest) commandMessage).toString());
+        System.out.println("\n" + self + " RSM Executing GETRequest: " + ((GETRequest) commandMessage).toString());
         GETReply getReply = null;
         if(kv != null) {
-            getReply = new GETReply(self, commandMessage.getSource(), kv);
+            getReply = new GETReply(self, commandMessage.getSource(), kv, commandMessage.getPid(), commandMessage.getSeqNum());
             getReply.successful = true;
         } else {
-            getReply = new GETReply(self, commandMessage.getSource(), null);
+            getReply = new GETReply(self, commandMessage.getSource(), null, commandMessage.getPid(), commandMessage.getSeqNum());
             getReply.successful = false;
         }
 
@@ -78,11 +80,11 @@ public class ReplicatedStateMachine extends ComponentDefinition {
         PUTReply putReply = null;
         if(withinPartitionSpace(kv.getKey())) {
             store.put(kv.getKey(), kv);
-            System.out.println(self + " RSM Executing PUTRequest: " + ((PUTRequest) commandMessage).toString());
-            putReply = new PUTReply(self, commandMessage.getSource(), kv);
+            System.out.println("\n" + self + " RSM Executing PUTRequest: " + ((PUTRequest) commandMessage).toString());
+            putReply = new PUTReply(self, commandMessage.getSource(), kv, commandMessage.getPid(), commandMessage.getSeqNum());
             putReply.successful = true;
         } else {
-            putReply = new PUTReply(self, commandMessage.getSource(), null);
+            putReply = new PUTReply(self, commandMessage.getSource(), null, commandMessage.getPid(), commandMessage.getSeqNum());
             putReply.successful = false;
         }
         response = new ExecuteReponse(putReply);
@@ -99,17 +101,17 @@ public class ReplicatedStateMachine extends ComponentDefinition {
             int storeValue = store.get(kv.getKey()).getValue();
             if(storeValue == kv.getValue()) {
                 kv = new KVEntry(kv.getKey(), ((CASRequest) commandMessage).getNewValue(), 0);
-                System.out.println(self + " RSM Executing CASRequest: " + ((CASRequest) commandMessage).toString());
+                System.out.println("\n" + self + " RSM Executing CASRequest: " + ((CASRequest) commandMessage).toString());
                 store.put(kv.getKey(), kv);
-                casReply = new CASReply(self, commandMessage.getSource(), kv, storeValue);
+                casReply = new CASReply(self, commandMessage.getSource(), kv, storeValue, commandMessage.getPid(), commandMessage.getSeqNum());
                 casReply.successful = true;
             } else {
-                casReply = new CASReply(self, commandMessage.getSource(), kv, -1);
+                casReply = new CASReply(self, commandMessage.getSource(), kv, -1, commandMessage.getPid(), commandMessage.getSeqNum());
                 casReply.successful = false;
             }
         }
         else {
-            casReply = new CASReply(self, commandMessage.getSource(), kv, -1);
+            casReply = new CASReply(self, commandMessage.getSource(), kv, -1, commandMessage.getPid(), commandMessage.getSeqNum());
             casReply.successful = false;
         }
         response = new ExecuteReponse(casReply);

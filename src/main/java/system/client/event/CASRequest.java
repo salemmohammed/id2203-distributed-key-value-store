@@ -30,7 +30,8 @@ public class CASRequest extends CommandMessage {
 
 
     public String toString() {
-        return "{CASRequest: key= " + kv.getKey() + ", value= " + kv.getValue() + ", newValue= " + newValue + "}";
+        String commandString = "pid= " + this.getPid() + ", seqNum= " + this.getSeqNum();
+        return "{CASRequest: " + commandString +  ", key= " + kv.getKey() + ", value= " + kv.getValue() + ", newValue= " + newValue + "}";
 
     }
 }

@@ -18,7 +18,8 @@ public class GETRequest extends CommandMessage {
 
 
     public String toString() {
-        return "{GETRequest: key= " + kv.getKey() + "}";
+        String commandString = "pid= " + this.getPid() + ", seqNum= " + this.getSeqNum();
+        return "{GETRequest: " + commandString + ", key= " + kv.getKey() + "}";
 
     }
 

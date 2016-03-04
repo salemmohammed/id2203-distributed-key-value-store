@@ -18,7 +18,8 @@ public class PUTRequest extends CommandMessage {
 
 
     public String toString() {
-        return "{PUTRequest: key= " + kv.getKey() + ", value= " + kv.getValue() + "}";
+        String commandString = "pid= " + this.getPid() + ", seqNum= " + this.getSeqNum();
+        return "{PUTRequest: " + commandString + ", key= " + kv.getKey() + ", value= " + kv.getValue() + "}";
 
     }
 

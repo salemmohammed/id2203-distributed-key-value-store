@@ -218,7 +218,7 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(ExecuteReponse executeReponse) {
             if(self.equals(leader)) {
-                System.out.println(self + " Sending response to " + executeReponse.getCommandMessage().getDestination());
+                System.out.println(self + " Leader Node Sends Response: " + executeReponse.getCommandMessage().toString() + " to " + executeReponse.getCommandMessage().getDestination());
                 trigger(executeReponse.getCommandMessage(), net);
             }
         }

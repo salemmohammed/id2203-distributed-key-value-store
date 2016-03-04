@@ -10,8 +10,8 @@ public class CASReply extends CommandMessage {
     public boolean successful;
 
 
-    public CASReply(TAddress src, TAddress dst, KVEntry kv, int oldValue) {
-        super(src, dst);
+    public CASReply(TAddress src, TAddress dst, KVEntry kv, int oldValue, int pid, int seqNum) {
+        super(src, dst, pid, seqNum);
         this.kv = kv;
         this.oldValue = oldValue;
     }
@@ -27,7 +27,7 @@ public class CASReply extends CommandMessage {
 
 
     public String toString() {
-        return "{CASReply: key= " + kv.getKey() + ", value= " + kv.getValue() + ", oldValue= " + oldValue + ", successful= " + successful + "}";
-
+        String commandString = "pid= " + this.getPid() + ", seqNum= " + this.getSeqNum();
+        return "{CASReply: " + commandString + ", key= " + kv.getKey() + ", value= " + kv.getValue() + ", oldValue= " + oldValue + ", successful= " + successful + "}";
     }
 }

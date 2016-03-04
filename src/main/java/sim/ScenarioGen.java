@@ -225,7 +225,7 @@ public class ScenarioGen {
                         //Nodes to send GETRequest to
                         ArrayList<TAddress> nodes = new ArrayList<>();
                         nodes.add(new TAddress(InetAddress.getByName("192.193.0." + target), targetPort));
-                        KVEntry kv = new KVEntry(5,100,0);
+                        KVEntry kv = new KVEntry(5,val,0);
                         this.command = new CASRequest(selfAdr, nodes.get(0), kv, 30, selfAdr.getId(), 0);
                         this.nodes = nodes;
                     } catch (UnknownHostException ex) {
@@ -489,12 +489,7 @@ public class ScenarioGen {
 
     SCENARIO:
     1. The scenario first creates the three replication groups with three nodes in each group.
-    2. Kill the node with the last octet of 1.
-    3. Kill the node with the last octet of 2.
-    4. Printouts show that as soon as a process is killed, it is suspected by other correct nodes which satisfies
-    EPFD1. Removing comment in class EventuallyPerfectFailureDetector makes all nodes to suspected all other nodes
-    by default. By seeing that all correct nodes are removed from all correct nodes suspect sets, we can verify that
-    EPFD2 is satisfied.
+
      */
     public static SimulationScenario testAbortableSequenceConsensusProperties() {
         SimulationScenario testAbortableSequenceConsensus = new SimulationScenario() {
@@ -543,9 +538,11 @@ public class ScenarioGen {
 
     SCENARIO:
     1. The scenario first creates the three replication groups with three nodes in each group.
-    2. Two clients each sending a PUT request and two clients that send one GET request each is started at the same time.
+    2. Two clients each sending a PUT request, two clients that sends one GET request each and two clients sends CAS requests,
+       all processes are started at the same time.
     3. Printouts show that all processes obtain the same sequence of outputs, satisfying the property RSM1. All executed
-     commands by correct processes produces an output, ensuring that property RSM2 is satisfied.
+       commands by correct processes produces an output, ensuring that property RSM2 is satisfied. Printouts also verify linearizability of
+       the RSM as the commands are decided in total order which is provided by the ASC abstraction.
     */
     public static SimulationScenario testReplicatedStateMachineProperties() {
         SimulationScenario testReplicatedStateMachine = new SimulationScenario() {
@@ -562,7 +559,7 @@ public class ScenarioGen {
                 StochasticProcess getClient1 = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(2, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 2));
+                        raise(2, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 1));
                     }
                 };
 
@@ -574,9 +571,17 @@ public class ScenarioGen {
                     }
                 };
 
+                StochasticProcess casClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(2, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new ConstantDistribution<Integer>(Integer.class, 3));
+                    }
+                };
+
                 nodeGroupProcess.start();
                 putClient1.start();
                 getClient1.startAtSameTimeWith(putClient1);
+                casClient.startAtSameTimeWith(putClient1);
             }
         };
 
