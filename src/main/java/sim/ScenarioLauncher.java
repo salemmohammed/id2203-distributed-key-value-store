@@ -9,18 +9,20 @@ public class ScenarioLauncher {
         SimulationScenario.setSeed(seed);
 
 
-
-        SimulationScenario allLeaderAllOperationsASC = ScenarioGen.testAllOperationsAllLeaders();
-        SimulationScenario oneLeaderAllOperationsASC = ScenarioGen.testAllOperationsOneLeader();
-
-
-
         //Shippable
         SimulationScenario monarchicalEventualLeaderDetectorScenario = ScenarioGen.testMonarchicalEventualLeaderDetectorProperties();
         SimulationScenario bestEffortBroadcastScenario = ScenarioGen.testBestEffortBroadcastProperties();
         SimulationScenario eventualFailureDetectorScenario = ScenarioGen.testEventualPerfectFailureDetectorProperties();
         SimulationScenario perfectPointToPointLinkScenario = ScenarioGen.testPerfectPointToPointLinkProperties();
         SimulationScenario replicatedStateMachineScenario = ScenarioGen.testReplicatedStateMachineProperties();
-        replicatedStateMachineScenario.simulate(LauncherComp.class);
+
+        //Asc tests
+        SimulationScenario ascOneLeader = ScenarioGen.testAbortableSequenceConsensusOneLeader();
+        SimulationScenario ascAllLeader = ScenarioGen.testAbortableSequenceConsensusAllLeader();
+        SimulationScenario ascLeaderElection = ScenarioGen.testAbortableSequenceConsensusLeaderElection();
+        SimulationScenario ascNoDuplication = ScenarioGen.testAbortableSequenceConsensusNoDuplicates();
+        SimulationScenario ascQuorumMajority = ScenarioGen.testAbortableSequenceConsensusQuorumMajority();
+
+        ascQuorumMajority.simulate(LauncherComp.class);
     }
 }

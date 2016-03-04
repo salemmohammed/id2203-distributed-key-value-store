@@ -275,159 +275,6 @@ public class ScenarioGen {
     };
 
 
-
-    public static SimulationScenario testAllOperationsAllLeaders() {
-        SimulationScenario allOperationAllLeader = new SimulationScenario() {
-            {
-                //Start three nodes holding even values
-                StochasticProcess nodeGroupProcess = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(0));
-                        raise(9, allLeaderGroup, new BasicIntSequentialDistribution(1));
-                    }
-                };
-
-                //Start client that gets a value
-                StochasticProcess putClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(3));
-                    }
-                };
-
-                StochasticProcess casClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(1000));
-                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new BasicIntSequentialDistribution(2));
-                    }
-                };
-
-                StochasticProcess getClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(1, startGETClient, new BasicIntSequentialDistribution(12), new BasicIntSequentialDistribution(1));
-                    }
-                };
-
-                StochasticProcess getClient2 = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(3, startGETClient, new BasicIntSequentialDistribution(15), new ConstantDistribution<Integer>(Integer.class, 3));
-                    }
-                };
-
-                StochasticProcess getClient3 = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(3, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 2));
-                    }
-                };
-
-                StochasticProcess killreplicationNode1 = new StochasticProcess() {
-                    {
-                        raise(1, killNode, new BasicIntSequentialDistribution(1));
-                    }
-                };
-
-                /*
-                StochasticProcess killreplicationNode3 = new StochasticProcess() {
-                    {
-                        raise(1, killNode, new BasicIntSequentialDistribution(3));
-                    }
-                };
-                */
-
-                nodeGroupProcess.start();
-                putClient.start();
-                getClient.startAfterTerminationOf(5000, putClient);
-                casClient.startAfterTerminationOf(5000, getClient);
-                //killreplicationNode3.startAfterTerminationOf(5000, casClient);
-                getClient2.startAfterTerminationOf(2000, casClient);
-                killreplicationNode1.startAfterTerminationOf(2000, getClient2);
-                getClient3.startAfterTerminationOf(2000, killreplicationNode1);
-
-            }
-        };
-
-        return allOperationAllLeader;
-    }
-
-    public static SimulationScenario testAllOperationsOneLeader() {
-        SimulationScenario allOperationOneLeader = new SimulationScenario() {
-            {
-                //Start three nodes holding even values
-                StochasticProcess nodeGroupProcess = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(0));
-                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
-                    }
-                };
-
-                //Start client that gets a value
-                StochasticProcess putClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(5));
-                    }
-                };
-
-                StochasticProcess casClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(1000));
-                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new BasicIntSequentialDistribution(2));
-                    }
-                };
-
-                StochasticProcess getClient = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(1, startGETClient, new BasicIntSequentialDistribution(12), new BasicIntSequentialDistribution(1));
-                    }
-                };
-
-                StochasticProcess getClient2 = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(1, startGETClient, new BasicIntSequentialDistribution(15), new ConstantDistribution<Integer>(Integer.class, 8));
-                    }
-                };
-
-                StochasticProcess getClient3 = new StochasticProcess() {
-                    {
-                        eventInterArrivalTime(constant(100));
-                        raise(3, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 3));
-                    }
-                };
-
-                StochasticProcess killreplicationNode1 = new StochasticProcess() {
-                    {
-                        raise(1, killNode, new BasicIntSequentialDistribution(7));
-                    }
-                };
-
-                /*
-                StochasticProcess killreplicationNode3 = new StochasticProcess() {
-                    {
-                        raise(1, killNode, new BasicIntSequentialDistribution(3));
-                    }
-                };
-                */
-
-                nodeGroupProcess.start();
-                putClient.start();
-                getClient.startAfterTerminationOf(5000, putClient);
-                casClient.startAfterTerminationOf(5000, getClient);
-                //killreplicationNode3.startAfterTerminationOf(5000, casClient);
-                getClient2.startAfterTerminationOf(2000, casClient);
-                killreplicationNode1.startAfterTerminationOf(2000, getClient2);
-                getClient3.startAfterTerminationOf(2000, killreplicationNode1);
-
-            }
-        };
-
-        return allOperationOneLeader;
-    }
-
     /*
     -- Simulation scenario to test Eventually-Perfect-Failure-Detector component --
     Properties:
@@ -482,20 +329,22 @@ public class ScenarioGen {
     -- Simulation scenario to test the Abortable-Sequence-Consensus component --
     Properties:
     Validity: If process p decides v then v is a sequence of proposed commands without duplicates
-    Uniform Agreement:  If process p decides u and process q decides v then one is a prefix of the other
-    Integrity:  If process p decides u and later decides v then u is a prefix of v
-    Termination:  If command C is proposed then eventually every correct process decides a sequence containing C
+    Uniform Agreement: If process p decides u and process q decides v then one is a prefix of the other
+    Integrity: If process p decides u and later decides v then u is a prefix of v
+    Termination: If command C is proposed then eventually every correct process decides a sequence containing C
 
 
     SCENARIO:
     1. The scenario first creates the three replication groups with three nodes in each group.
+    2. One client sends a PUT request, another sends a CAS request and a third sends a GET request.
+    3. Outputs verifies that we have only one leader doing PROPOSE ,even if
+       requests are sent to different nodes, in a replication group.
+       Output satisfies the above mentioned ASC properties.
+    */
+    public static SimulationScenario testAbortableSequenceConsensusOneLeader() {
 
-     */
-    public static SimulationScenario testAbortableSequenceConsensusProperties() {
         SimulationScenario testAbortableSequenceConsensus = new SimulationScenario() {
             {
-
-                //Start three nodes holding even values
                 StochasticProcess nodeGroupProcess = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(0));
@@ -503,31 +352,312 @@ public class ScenarioGen {
                     }
                 };
 
-                StochasticProcess getClient1 = new StochasticProcess() {
+                StochasticProcess getClient = new StochasticProcess() {
                     {
-                        eventInterArrivalTime(constant(100));
-                        raise(3, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 2));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 3));
                     }
                 };
 
-                //Start client that gets a value
-                StochasticProcess putClient1 = new StochasticProcess() {
+                StochasticProcess putClient = new StochasticProcess() {
                     {
-                        eventInterArrivalTime(constant(100));
-                        raise(3, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10),new ConstantDistribution<Integer>(Integer.class, 2));
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(1));
                     }
                 };
 
+                StochasticProcess casClient = new StochasticProcess() {
+                    {
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new BasicIntSequentialDistribution(2));
+                    }
+                };
 
                 nodeGroupProcess.start();
-                putClient1.start();
-                getClient1.startAtSameTimeWith(putClient1);
+                putClient.start();
+                casClient.startAtSameTimeWith(putClient);
+                getClient.startAtSameTimeWith(putClient);
             }
         };
 
         return testAbortableSequenceConsensus;
     }
 
+
+    /*
+    -- Simulation scenario to test the Abortable-Sequence-Consensus component --
+    Properties:
+    Validity: If process p decides v then v is a sequence of proposed commands without duplicates
+    Uniform Agreement: If process p decides u and process q decides v then one is a prefix of the other
+    Integrity: If process p decides u and later decides v then u is a prefix of v
+    Termination: If command C is proposed then eventually every correct process decides a sequence containing C
+
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. One client sends a PUT request, another sends a CAS request and a third sends a GET request.
+    3. Outputs verifies that we have multiple leaders doing PROPOSE in a replication group.
+       Two leaders act as conflicting proposers as expected and ASC still decides on a sequence
+       of commands in total order. Output satisfies the above mentioned ASC properties.
+    */
+    public static SimulationScenario testAbortableSequenceConsensusAllLeader() {
+
+
+        SimulationScenario allOperationAllLeader = new SimulationScenario() {
+            {
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, allLeaderGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess getClient = new StochasticProcess() {
+                    {
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(12), new ConstantDistribution<Integer>(Integer.class, 3));
+                    }
+                };
+
+                StochasticProcess putClient = new StochasticProcess() {
+                    {
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new ConstantDistribution<Integer>(Integer.class, 1));
+
+                    }
+                };
+
+                StochasticProcess casClient = new StochasticProcess() {
+                    {
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new ConstantDistribution<Integer>(Integer.class, 2));
+                    }
+                };
+
+                nodeGroupProcess.start();
+                putClient.start();
+                casClient.startAtSameTimeWith(putClient);
+                getClient.startAtSameTimeWith(putClient);
+
+            }
+        };
+        return allOperationAllLeader;
+    }
+
+    /*
+    -- Simulation scenario to test the Abortable-Sequence-Consensus component --
+    Properties:
+    Validity: If process p decides v then v is a sequence of proposed commands without duplicates
+    Uniform Agreement: If process p decides u and process q decides v then one is a prefix of the other
+    Integrity: If process p decides u and later decides v then u is a prefix of v
+    Termination: If command C is proposed then eventually every correct process decides a sequence containing C
+
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. One client send a GET request, another client send a PUT request and one client send one CAS requests,
+       all processes are started at the same time.
+    3. Output verifies that leader election works even if clients sends requests to nodes outside the responsible
+       replication group. ASC properties still holds.
+    */
+    public static SimulationScenario testAbortableSequenceConsensusNoDuplicates() {
+        SimulationScenario testAbortableSequenceConsensus = new SimulationScenario() {
+            {
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess getClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 7));
+                    }
+                };
+
+                StochasticProcess putClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(5));
+                    }
+                };
+
+                StochasticProcess casClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(15), new BasicIntSequentialDistribution(9));
+                    }
+                };
+
+                nodeGroupProcess.start();
+                putClient.start();
+                casClient.startAtSameTimeWith(putClient);
+                getClient.startAtSameTimeWith(putClient);
+            }
+        };
+
+        return testAbortableSequenceConsensus;
+    }
+
+
+
+
+    /*
+    -- Simulation scenario to test the Abortable-Sequence-Consensus component --
+    Properties:
+    Validity: If process p decides v then v is a sequence of proposed commands without duplicates
+    Uniform Agreement: If process p decides u and process q decides v then one is a prefix of the other
+    Integrity: If process p decides u and later decides v then u is a prefix of v
+    Termination: If command C is proposed then eventually every correct process decides a sequence containing C
+
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. Two clients send two GET requests, two clients send two PUT requests and two clients send two CAS requests,
+       all processes are started at the same time.
+    3. Output verifies that leader election works when a leader crashes
+       and that the ASC properties still holds.
+    */
+    public static SimulationScenario testAbortableSequenceConsensusLeaderElection() {
+        SimulationScenario testAbortableSequenceConsensus = new SimulationScenario() {
+            {
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess getClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(2, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 3));
+                    }
+                };
+
+                StochasticProcess putClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(2, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess casClient = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(100));
+                        raise(2, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(15), new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+
+                StochasticProcess killNodeLeader = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                nodeGroupProcess.start();
+                putClient.start();
+                casClient.startAtSameTimeWith(putClient);
+                getClient.startAtSameTimeWith(putClient);
+                killNodeLeader.startAtSameTimeWith(putClient);
+            }
+        };
+
+        return testAbortableSequenceConsensus;
+    }
+
+
+    /*
+    -- Simulation scenario to test the Abortable-Sequence-Consensus component --
+    Properties:
+    Validity: If process p decides v then v is a sequence of proposed commands without duplicates
+    Uniform Agreement: If process p decides u and process q decides v then one is a prefix of the other
+    Integrity: If process p decides u and later decides v then u is a prefix of v
+    Termination: If command C is proposed then eventually every correct process decides a sequence containing C
+
+
+    SCENARIO:
+    1. The scenario first creates the three replication groups with three nodes in each group.
+    2. One client sends a PUT request, another sends a CAS request and a third sends a GET request.
+    3. Two nodes are killed in the targeted replication group.
+    4. Three clients send one request each, same as in step 2.
+    5. Output indicates that requests from first round are decided whereas requests from the second round
+       cannot be decided since there is no majority quorum in the responsible replication group. ASC properties still hold.
+    */
+    public static SimulationScenario testAbortableSequenceConsensusQuorumMajority() {
+
+        SimulationScenario testAbortableSequenceConsensus = new SimulationScenario() {
+            {
+                StochasticProcess nodeGroupProcess = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(0));
+                        raise(9, nodeGroup, new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess getClient = new StochasticProcess() {
+                    {
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 3));
+                    }
+                };
+
+                StochasticProcess putClient = new StochasticProcess() {
+                    {
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10), new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess casClient = new StochasticProcess() {
+                    {
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+                 StochasticProcess getClient2 = new StochasticProcess() {
+                    {
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(40), new ConstantDistribution<Integer>(Integer.class, 3));
+                    }
+                };
+
+                StochasticProcess putClient2 = new StochasticProcess() {
+                    {
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(15), new BasicIntSequentialDistribution(1));
+                    }
+                };
+
+                StochasticProcess casClient2 = new StochasticProcess() {
+                    {
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(16), new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+                StochasticProcess kill1 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(2));
+                    }
+                };
+
+                StochasticProcess kill2 = new StochasticProcess() {
+                    {
+                        raise(1, killNode, new BasicIntSequentialDistribution(3));
+                    }
+                };
+
+                nodeGroupProcess.start();
+                putClient.start();
+                casClient.startAfterTerminationOf(100, putClient);
+                getClient.startAfterTerminationOf(100,casClient);
+
+                kill1.startAfterTerminationOf(100, getClient);
+                kill2.startAfterTerminationOf(100, kill1);
+
+                putClient2.startAfterStartOf(100, kill2);
+                casClient2.startAfterTerminationOf(100, putClient2);
+                getClient2.startAfterTerminationOf(100,casClient2);
+
+
+            }
+        };
+
+        return testAbortableSequenceConsensus;
+    }
 
 
     /*
@@ -591,7 +721,7 @@ public class ScenarioGen {
 
 
     /*
-    -- Simulation scenario to test Pefect-Point-To-Point-Link --
+    -- Simulation scenario to test Perfect-Point-To-Point-Link --
     Properties:
     PL1: Reliable delivery: If a correct process p sends a message m to a correct process q, then q eventually delivers m.
     PL2: No duplication: No message is delivered by a process more than once.
