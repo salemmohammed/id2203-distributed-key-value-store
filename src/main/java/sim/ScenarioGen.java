@@ -450,7 +450,7 @@ public class ScenarioGen {
     SCENARIO:
     1. The scenario first creates the three replication groups with three nodes in each group.
     2. One client send a GET request, another client send a PUT request and one client send one CAS requests,
-       all processes are started at the same time.
+       all processes are started at the same time. Requests from clients are sent to replication groups not responsible for the key-value pairs
     3. Output verifies that leader election works even if clients sends requests to nodes outside the responsible
        replication group. ASC properties still holds.
     */
