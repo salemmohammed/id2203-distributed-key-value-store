@@ -27,7 +27,7 @@ public class CASReply extends CommandMessage {
 
 
     public String toString() {
-        String commandString = "pid= " + this.getPid() + ", seqNum= " + this.getSeqNum();
-        return "{CASReply: " + commandString + ", key= " + kv.getKey() + ", value= " + kv.getValue() + ", oldValue= " + oldValue + ", successful= " + successful + "}";
+        String commandString = "pid=" + this.getPid() + ", seqNum=" + this.getSeqNum();
+        return "{CASReply: " + commandString + ", key=" + kv.getKey() + ", value=" + kv.getValue() + ", oldValue=" + oldValue + ", successful=" + successful + "}";
     }
 }

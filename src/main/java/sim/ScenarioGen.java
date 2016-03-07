@@ -689,7 +689,7 @@ public class ScenarioGen {
                 StochasticProcess getClient1 = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(2, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 1));
+                        raise(1, startGETClient, new BasicIntSequentialDistribution(30), new ConstantDistribution<Integer>(Integer.class, 1));
                     }
                 };
 
@@ -697,14 +697,14 @@ public class ScenarioGen {
                 StochasticProcess putClient1 = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(2, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10),new ConstantDistribution<Integer>(Integer.class, 2));
+                        raise(1, startPUTClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(10),new ConstantDistribution<Integer>(Integer.class, 1));
                     }
                 };
 
                 StochasticProcess casClient = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(100));
-                        raise(2, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new ConstantDistribution<Integer>(Integer.class, 3));
+                        raise(1, startCASClient, new BasicIntSequentialDistribution(1), new BasicIntSequentialDistribution(11), new ConstantDistribution<Integer>(Integer.class, 3));
                     }
                 };
 

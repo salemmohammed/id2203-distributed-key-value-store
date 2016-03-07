@@ -73,9 +73,9 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(GETRequest getRequest) {
             Integer key = getRequest.getKv().getKey();
-            //  System.out.println("proposing get");
             if(replicationGroup.withinPartitionSpace(key)) {
             if(self.equals(leader)) {
+                System.out.println(self + " Proposing: [" + getRequest.toString() + "]");
                 trigger(new AscPropose(getRequest), asc);
             }
             else {
@@ -97,7 +97,7 @@ public class Node extends ComponentDefinition {
         int i = 0;
         for(ReplicationGroup replicationGroup : replicationGroups) {
             if(replicationGroup.withinPartitionSpace(key)) {
-                System.out.println(commandMessage.getDestination() + " Forwarding to correct group: group " + i);
+                System.out.println(commandMessage.getDestination() + " Not my key space! Forwarding to correct group: group " + (i+1));
                 BebDeliver bebDeliver = new BebDeliver(commandMessage.getSource(), commandMessage);
                 trigger(new BebBroadcastRequest(bebDeliver, replicationGroup.getNodes()), beb);
             }
@@ -109,9 +109,9 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(PUTRequest putRequest) {
             Integer key = putRequest.getKv().getKey();
-            //  System.out.println("proposing get");
             if (replicationGroup.withinPartitionSpace(key)) {
                 if (self.equals(leader)) {
+                    System.out.println(self + " Proposing: [" + putRequest.toString() + "]");
                     trigger(new AscPropose(putRequest), asc);
                 } else {
                     PUTRequest putRequestToLeader = new PUTRequest(putRequest.getSource(), leader, putRequest.getKv(), putRequest.getPid(), putRequest.getSeqNum());
@@ -127,9 +127,9 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(CASRequest casRequest) {
             Integer key = casRequest.getKVEntry().getKey();
-            //  System.out.println("proposing get");
             if (replicationGroup.withinPartitionSpace(key)) {
                 if (self.equals(leader)) {
+                    System.out.println(self + " Proposing: [" + casRequest.toString() + "]");
                     trigger(new AscPropose(casRequest), asc);
                 } else {
                     CASRequest casRequestToLeader = new CASRequest(casRequest.getSource(), leader, casRequest.getKVEntry(), casRequest.getNewValue(), casRequest.getPid(), casRequest.getSeqNum());
@@ -165,7 +165,7 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(AscAbort abortEvent) {
             commandMessageHoldbackQueue.add(abortEvent.getCommandMessage());
-            System.out.println(self + " Received AscAbort, checking for new trust..." +  abortEvent);
+            System.out.println(self + " Received AscAbort, checking for new trust...");
             trigger(new CheckLeader(), meld);
         }
     };
@@ -210,7 +210,6 @@ public class Node extends ComponentDefinition {
         }
         System.out.print("]");
         System.out.println("");
-
     }
 
 
@@ -227,7 +226,7 @@ public class Node extends ComponentDefinition {
     Handler<Trust> trustHandler = new Handler<Trust>() {
         @Override
         public void handle(Trust trust) {
-            System.out.println(self + " Received trust, new leader is " + trust.getLeader());
+            System.out.println(self + " Received Trust, new leader is " + trust.getLeader());
             leader = trust.getLeader();
             for(int i = 0; i < commandMessageHoldbackQueue.size(); i++) {
                 CommandMessage commandMessage = commandMessageHoldbackQueue.remove(i);
