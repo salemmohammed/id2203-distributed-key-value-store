@@ -1,21 +1,16 @@
 package deployment;
 
-import preload.DatastoreFactory;
 import preload.DatastoreFactoryDeployment;
 import se.sics.kompics.Kompics;
-import system.client.ClientParentDeployment;
+import client.ClientParentDeployment;
 import system.data.KVEntry;
-import system.client.ClientParent;
-import system.client.event.CommandMessage;
-import system.client.event.GETRequest;
+import client.event.CommandMessage;
+import client.event.GETRequest;
 import system.network.TAddress;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/**
- * Created by marcus on 03/03/16.
- */
 public class ClientMain {
 
     public static void main(String[] args) {

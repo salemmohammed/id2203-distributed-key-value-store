@@ -7,21 +7,21 @@ import se.sics.kompics.network.Network;
 import system.beb.BestEffortBroadcastPort;
 import system.beb.event.BebBroadcastRequest;
 import system.beb.event.BebDeliver;
-import system.client.event.CASRequest;
-import system.client.event.CommandMessage;
-import system.client.event.GETRequest;
+import client.event.CASRequest;
+import client.event.CommandMessage;
+import client.event.GETRequest;
 import system.data.KVEntry;
-import system.client.event.PUTRequest;
-import system.coordination.meld.MELDPort;
-import system.coordination.meld.event.CheckLeader;
-import system.coordination.meld.event.Trust;
-import system.coordination.paxos.event.AscAbort;
-import system.coordination.paxos.event.AscDecide;
-import system.coordination.paxos.event.AscPropose;
-import system.coordination.paxos.port.ASCPort;
-import system.coordination.rsm.event.ExecuteCommand;
-import system.coordination.rsm.event.ExecuteReponse;
-import system.coordination.rsm.port.RSMPort;
+import client.event.PUTRequest;
+import system.meld.MELDPort;
+import system.meld.event.CheckLeader;
+import system.meld.event.Trust;
+import system.multipaxos.event.AscAbort;
+import system.multipaxos.event.AscDecide;
+import system.multipaxos.event.AscPropose;
+import system.multipaxos.port.ASCPort;
+import system.rsm.event.ExecuteCommand;
+import system.rsm.event.ExecuteReponse;
+import system.rsm.port.RSMPort;
 import system.data.ReplicationGroup;
 import system.network.TAddress;
 import java.util.*;
@@ -72,14 +72,14 @@ public class Node extends ComponentDefinition {
     Handler<GETRequest> getRequestHandler = new Handler<GETRequest>() {
         @Override
         public void handle(GETRequest getRequest) {
-            Integer key = getRequest.getKv().getKey();
+            Integer key = getRequest.getKVEntry().getKey();
             if(replicationGroup.withinPartitionSpace(key)) {
             if(self.equals(leader)) {
                 System.out.println(self + " Proposing: [" + getRequest.toString() + "]");
                 trigger(new AscPropose(getRequest), asc);
             }
             else {
-                GETRequest getRequestToLeader = new GETRequest(getRequest.getSource(), leader, getRequest.getKv(), getRequest.getPid(), getRequest.getSeqNum());
+                GETRequest getRequestToLeader = new GETRequest(getRequest.getSource(), leader, getRequest.getKVEntry(), getRequest.getPid(), getRequest.getSeqNum());
                 trigger(getRequestToLeader, net);
                 seqNum++;
             }
@@ -108,13 +108,13 @@ public class Node extends ComponentDefinition {
     Handler<PUTRequest> putRequestHandler = new Handler<PUTRequest>() {
         @Override
         public void handle(PUTRequest putRequest) {
-            Integer key = putRequest.getKv().getKey();
+            Integer key = putRequest.getKVEntry().getKey();
             if (replicationGroup.withinPartitionSpace(key)) {
                 if (self.equals(leader)) {
                     System.out.println(self + " Proposing: [" + putRequest.toString() + "]");
                     trigger(new AscPropose(putRequest), asc);
                 } else {
-                    PUTRequest putRequestToLeader = new PUTRequest(putRequest.getSource(), leader, putRequest.getKv(), putRequest.getPid(), putRequest.getSeqNum());
+                    PUTRequest putRequestToLeader = new PUTRequest(putRequest.getSource(), leader, putRequest.getKVEntry(), putRequest.getPid(), putRequest.getSeqNum());
                     trigger(putRequestToLeader, net);
                 }
             } else {

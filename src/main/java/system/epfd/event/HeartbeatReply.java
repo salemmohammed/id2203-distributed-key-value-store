@@ -7,9 +7,6 @@ import system.network.TMessage;
 
 import java.io.Serializable;
 
-/**
- * Created by Robin on 2016-02-07.
- */
 public class HeartbeatReply extends TMessage implements Serializable {
     public HeartbeatReply(TAddress src, TAddress dst) {
         super(src, dst, Transport.TCP);

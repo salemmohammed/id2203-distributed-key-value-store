@@ -8,9 +8,6 @@ import system.network.TAddress;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-/**
- * Created by Robin on 2016-02-14.
- */
 public class BebDeliver implements KompicsEvent {
 
     private static final long serialVersionUID = 4088333329204792579L;

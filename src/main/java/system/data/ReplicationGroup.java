@@ -4,9 +4,6 @@ import system.network.TAddress;
 
 import java.util.ArrayList;
 
-/**
- * Created by Robin on 2016-03-01.
- */
 public class ReplicationGroup {
     private Bound bound;
     private ArrayList<TAddress> nodes;

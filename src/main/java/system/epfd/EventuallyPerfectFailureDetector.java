@@ -10,15 +10,12 @@ import system.epfd.event.HeartbeatReply;
 import system.epfd.event.HeartbeatRequest;
 import system.epfd.event.Restore;
 import system.epfd.event.Suspect;
-import system.port.epfd.FDPort;
+import system.epfd.port.FDPort;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
 
-/**
- * Created by Robin on 2016-02-13.
- */
 public class EventuallyPerfectFailureDetector extends ComponentDefinition {
 
     private final ArrayList<TAddress> neighbours;

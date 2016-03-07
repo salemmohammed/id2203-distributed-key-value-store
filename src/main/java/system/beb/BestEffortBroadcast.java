@@ -5,10 +5,10 @@ import se.sics.kompics.network.Network;
 import system.beb.event.BebBroadcastRequest;
 import system.beb.event.BebDataMessage;
 import system.beb.event.BebDeliver;
-import system.client.event.CASRequest;
-import system.client.event.CommandMessage;
-import system.client.event.GETRequest;
-import system.client.event.PUTRequest;
+import client.event.CASRequest;
+import client.event.CommandMessage;
+import client.event.GETRequest;
+import client.event.PUTRequest;
 import system.network.TAddress;
 
 import java.util.ArrayList;

@@ -1,8 +1,5 @@
 package system.data;
 
-/**
- * Created by Robin on 2016-02-21.
- */
 public class Bound {
 
     private int lowerBound;

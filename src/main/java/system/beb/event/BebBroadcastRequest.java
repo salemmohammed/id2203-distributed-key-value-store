@@ -5,9 +5,6 @@ import system.network.TAddress;
 
 import java.util.ArrayList;
 
-/**
- * Created by Robin on 2016-02-14.
- */
 public class BebBroadcastRequest implements KompicsEvent {
 
     private final BebDeliver deliverEvent;

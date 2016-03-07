@@ -1,12 +1,10 @@
 package deployment;
 
-import preload.DatastoreFactory;
 import preload.DatastoreFactoryDeployment;
 import se.sics.kompics.Kompics;
 import system.data.KVEntry;
 import system.data.ReplicationGroup;
 import system.network.TAddress;
-import system.node.NodeParent;
 import system.node.NodeParentDeployment;
 
 import java.net.InetAddress;
@@ -14,9 +12,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by Robin on 2016-03-02.
- */
 public class NodeMain {
     public static void main(String [] args) {
         int id = Integer.parseInt(args[0]);
