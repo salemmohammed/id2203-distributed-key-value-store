@@ -1,0 +1,12 @@
+HOW TO RUN: Deployment 
+1. Set main class deployment.NodeMain, this is the nodes for replication groups
+2. Start nine instances of deployment.NodeMain with argument 1 for the first node, 2 for the second node etc...
+3. Set main class deployment.ClientMain, this is the client that performs a simple get
+4. Start one instance with arguments: 1 GET 5 
+note: (node = 1, operation = GET, 5 = key)
+
+
+HOW TO RUN: Simulation
+1. Set main class sim.ScenarioLauncher
+2. Select the scenario to run (there are many to select in the source of the ScenarioLauncher main) 
+3. Run the main!
